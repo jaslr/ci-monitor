@@ -1,38 +1,54 @@
-# sv
+# CI Monitor
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A glanceable GitHub Actions status dashboard for monitoring multiple repos across multiple accounts.
 
-## Creating a project
+**Live:** https://ci-monitor.pages.dev
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Features
 
-```sh
-# create a new project in the current directory
-npx sv create
+- Status indicators: green (success), red (failure), yellow (in progress), grey (unknown)
+- Toggle to show last run dates
+- Sort by: A-Z, Account, or Most Recent
+- Click any repo to go directly to its GitHub Actions page
 
-# create a new project in my-app
-npx sv create my-app
+## Tech Stack
+
+- SvelteKit
+- Tailwind CSS
+- Cloudflare Pages
+
+## Configuration
+
+Edit `src/lib/config/repos.ts` to add/remove repos:
+
+```ts
+export const repos: Record<string, string[]> = {
+  jaslr: ['repo1', 'repo2'],
+  'jvp-ux': ['repo3', 'repo4']
+};
 ```
 
-## Developing
+## Environment Variables
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Set these in Cloudflare Pages (Settings > Environment Variables):
 
-```sh
+- `GITHUB_PAT_JASLR` - GitHub PAT for jaslr account
+- `GITHUB_PAT_JVP_UX` - GitHub PAT for jvp-ux account
+
+PATs need `repo` and `workflow` scopes.
+
+## Development
+
+```bash
+npm install
+cp .env.example .env
+# Edit .env with your PATs
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Deployment
 
-To create a production version of your app:
-
-```sh
+```bash
 npm run build
+wrangler pages deploy .svelte-kit/cloudflare --project-name ci-monitor
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
