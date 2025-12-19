@@ -85,9 +85,9 @@ npm run check      # Type checking
 bd ready           # Check beads issues
 ```
 
-### Get It Live (Deployment)
+### Deployment (Every Change = Production)
 
-When asked to "get it live":
+**Every code change gets deployed to production.** After completing any task:
 ```bash
 npm run get-it-live
 ```

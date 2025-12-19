@@ -148,10 +148,10 @@
 		</div>
 	</header>
 
-	<!-- Main Content - Side Panel Layout -->
-	<div class="flex-1 flex min-h-0">
-		<!-- Left Sidebar - Repo List -->
-		<aside class="w-[20rem] shrink-0 border-r border-gray-800 overflow-y-auto bg-gray-900">
+	<!-- Main Content - Responsive Layout -->
+	<div class="flex-1 flex flex-col lg:flex-row min-h-0">
+		<!-- Left Sidebar - Repo List (hidden on small, shown on lg+) -->
+		<aside class="hidden lg:block w-[20rem] shrink-0 border-r border-gray-800 overflow-y-auto bg-gray-900">
 			{#if data.statuses.length === 0}
 				<div class="p-4 text-center text-gray-500">
 					<p>No repos configured.</p>
@@ -191,8 +191,106 @@
 			{/if}
 		</aside>
 
-		<!-- Right Panel - Infrastructure Details -->
-		<main class="flex-1 overflow-y-auto bg-gray-850 min-w-0">
+		<!-- Mobile Accordion View (shown on small, hidden on lg+) -->
+		<div class="lg:hidden flex-1 overflow-y-auto bg-gray-900">
+			{#if data.statuses.length === 0}
+				<div class="p-4 text-center text-gray-500">
+					<p>No repos configured.</p>
+				</div>
+			{:else}
+				<div class="divide-y divide-gray-800">
+					{#each displayStatuses as status (status.repo)}
+						{@const repoInfra = getInfra(status.repo)}
+						{@const isExpanded = selectedRepo === status.repo}
+						<div>
+							<!-- Accordion Header -->
+							<button
+								onclick={() => selectRepo(status.repo)}
+								class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors {isExpanded
+									? 'bg-gray-800'
+									: 'hover:bg-gray-800/50'}"
+							>
+								<!-- Status Dot -->
+								<div class="w-2.5 h-2.5 rounded-full {statusColors[status.status]} shrink-0"></div>
+
+								<!-- Repo Info -->
+								<div class="flex-1 min-w-0">
+									<div class="font-medium text-sm truncate {isExpanded ? 'text-white' : 'text-gray-300'}">
+										{status.repo}
+									</div>
+									<div class="text-xs text-gray-500 truncate">{status.owner}</div>
+								</div>
+
+								<!-- Service Count & Expand Icon -->
+								{#if repoInfra}
+									<div class="flex items-center gap-2 text-xs text-gray-500 shrink-0">
+										<Layers class="w-3 h-3" />
+										<span>{repoInfra.services.length}</span>
+									</div>
+								{/if}
+								<svg
+									class="w-4 h-4 text-gray-500 transition-transform {isExpanded ? 'rotate-180' : ''}"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								</svg>
+							</button>
+
+							<!-- Accordion Content -->
+							{#if isExpanded && repoInfra}
+								{@const grouped = groupServicesByCategory(repoInfra.services)}
+								<div class="px-4 pb-4 bg-gray-850">
+									<!-- Flow Diagram - Compact -->
+									<div class="py-3">
+										<div class="bg-gray-900 rounded-lg p-3 h-40">
+											<InfraFlowDiagram
+												services={repoInfra.services}
+												projectName={repoInfra.displayName}
+											/>
+										</div>
+									</div>
+
+									<!-- Services Grid -->
+									<div class="grid grid-cols-2 gap-3 text-xs">
+										{#each [...grouped.entries()] as [category, services]}
+											{@const IconComponent = categoryIcons[category] || Server}
+											<div class="bg-gray-800 rounded p-2">
+												<div class="flex items-center gap-1 text-gray-500 uppercase tracking-wider mb-1">
+													<IconComponent class="w-3 h-3" />
+													<span>{category}</span>
+												</div>
+												{#each services as service}
+													{#if service.dashboardUrl}
+														<a
+															href={service.dashboardUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															class="flex items-center gap-1 py-0.5 {providerColors[service.provider] || 'text-gray-300'} hover:underline"
+														>
+															<span class="truncate">{service.serviceName}</span>
+															<ExternalLink class="w-2.5 h-2.5 opacity-50 shrink-0" />
+														</a>
+													{:else}
+														<div class="py-0.5 {providerColors[service.provider] || 'text-gray-300'} truncate">
+															{service.serviceName}
+														</div>
+													{/if}
+												{/each}
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+
+		<!-- Right Panel - Infrastructure Details (hidden on small, shown on lg+) -->
+		<main class="hidden lg:flex flex-1 flex-col overflow-y-auto bg-gray-850 min-w-0">
 			{#if selectedStatus && selectedInfra}
 				{@const grouped = groupServicesByCategory(selectedInfra.services)}
 				<div class="h-full flex flex-col">
@@ -216,16 +314,16 @@
 						</div>
 					</div>
 
-					<!-- Flow Diagram - Large -->
-					<div class="shrink-0 p-6 border-b border-gray-700">
-						<div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Infrastructure Flow</div>
-						<div class="bg-gray-900 rounded-lg p-4 min-h-[20rem]">
+					<!-- Flow Diagram - Compact -->
+					<div class="shrink-0 px-6 py-4 border-b border-gray-700">
+						<div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Infrastructure Flow</div>
+						<div class="bg-gray-900 rounded-lg p-3 h-48">
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}
 							/>
 						</div>
-						<p class="text-xs text-gray-600 mt-2">Click any service node to open its dashboard</p>
+						<p class="text-xs text-gray-600 mt-1">Click nodes to open dashboards • Scroll to zoom</p>
 					</div>
 
 					<!-- Details Grid -->

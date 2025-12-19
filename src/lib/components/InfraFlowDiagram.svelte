@@ -10,7 +10,9 @@
 		HardDrive,
 		GitBranch,
 		AlertTriangle,
-		ExternalLink
+		ExternalLink,
+		Plus,
+		Minus
 	} from '@lucide/svelte';
 
 	interface Props {
@@ -21,6 +23,16 @@
 	}
 
 	let { services, projectName, domain, animated = true }: Props = $props();
+
+	// Zoom state
+	let scale = $state(1);
+	let panX = $state(0);
+	let panY = $state(0);
+	let containerEl: HTMLDivElement | null = $state(null);
+
+	const MIN_SCALE = 0.5;
+	const MAX_SCALE = 3;
+	const ZOOM_STEP = 0.2;
 
 	// Build nodes from services - include dashboard URLs
 	let nodes = $derived(buildNodes(services, projectName, domain));
@@ -61,7 +73,7 @@
 	function buildNodes(services: InfraService[], name: string, siteDomain?: string): DiagramNode[] {
 		const nodes: DiagramNode[] = [];
 
-		// Layout positions for larger diagram
+		// Compact layout - smaller spacing
 		const hasDb = services.some((s) => s.category === 'database');
 		const hasAuth = services.some((s) => s.category === 'auth');
 		const hasStorage = services.some((s) => s.category === 'storage');
@@ -70,8 +82,8 @@
 
 		// Count backend services for vertical centering
 		const backendCount = [hasDb, hasAuth, hasStorage].filter(Boolean).length;
-		const backendStartY = backendCount === 1 ? 140 : backendCount === 2 ? 100 : 60;
-		const backendSpacing = 80;
+		const backendStartY = backendCount === 1 ? 70 : backendCount === 2 ? 50 : 30;
+		const backendSpacing = 40;
 
 		// User node - left side
 		nodes.push({
@@ -79,11 +91,11 @@
 			type: 'user',
 			label: 'Users',
 			status: 'healthy',
-			x: 60,
-			y: 140
+			x: 30,
+			y: 70
 		});
 
-		// Hosting/Site node - center (represents the deployed app)
+		// Hosting/Site node - center
 		const hostingService = services.find((s) => s.category === 'hosting');
 		nodes.push({
 			id: 'site',
@@ -92,8 +104,8 @@
 			provider: hostingService?.provider,
 			status: hostingService?.status || 'unknown',
 			dashboardUrl: hostingService?.dashboardUrl,
-			x: 220,
-			y: 140
+			x: 110,
+			y: 70
 		});
 
 		// Backend services - right column
@@ -108,7 +120,7 @@
 				provider: dbService.provider,
 				status: dbService.status,
 				dashboardUrl: dbService.dashboardUrl,
-				x: 380,
+				x: 190,
 				y: backendY
 			});
 			backendY += backendSpacing;
@@ -123,7 +135,7 @@
 				provider: authService.provider,
 				status: authService.status,
 				dashboardUrl: authService.dashboardUrl,
-				x: 380,
+				x: 190,
 				y: backendY
 			});
 			backendY += backendSpacing;
@@ -138,12 +150,12 @@
 				provider: storageService.provider,
 				status: storageService.status,
 				dashboardUrl: storageService.dashboardUrl,
-				x: 380,
+				x: 190,
 				y: backendY
 			});
 		}
 
-		// CI - top center (deploys to site)
+		// CI - top center
 		if (hasCi) {
 			const ciService = services.find((s) => s.category === 'ci')!;
 			nodes.push({
@@ -153,8 +165,8 @@
 				provider: ciService.provider,
 				status: ciService.status,
 				dashboardUrl: ciService.dashboardUrl,
-				x: 220,
-				y: 30
+				x: 110,
+				y: 15
 			});
 		}
 
@@ -168,8 +180,8 @@
 				provider: monitoringService.provider,
 				status: monitoringService.status,
 				dashboardUrl: monitoringService.dashboardUrl,
-				x: 220,
-				y: 250
+				x: 110,
+				y: 125
 			});
 		}
 
@@ -180,64 +192,23 @@
 		const edges: InfraEdge[] = [];
 		const nodeIds = new Set(nodes.map((n) => n.id));
 
-		// User -> Site (main flow)
 		if (nodeIds.has('site')) {
-			edges.push({
-				id: 'user-site',
-				source: 'user',
-				target: 'site',
-				status: 'active'
-			});
+			edges.push({ id: 'user-site', source: 'user', target: 'site', status: 'active' });
 		}
-
-		// Site -> Backend services
 		if (nodeIds.has('database')) {
-			edges.push({
-				id: 'site-database',
-				source: 'site',
-				target: 'database',
-				status: 'active'
-			});
+			edges.push({ id: 'site-database', source: 'site', target: 'database', status: 'active' });
 		}
-
 		if (nodeIds.has('auth')) {
-			edges.push({
-				id: 'site-auth',
-				source: 'site',
-				target: 'auth',
-				status: 'active'
-			});
+			edges.push({ id: 'site-auth', source: 'site', target: 'auth', status: 'active' });
 		}
-
 		if (nodeIds.has('storage')) {
-			edges.push({
-				id: 'site-storage',
-				source: 'site',
-				target: 'storage',
-				status: 'active'
-			});
+			edges.push({ id: 'site-storage', source: 'site', target: 'storage', status: 'active' });
 		}
-
-		// CI -> Site (deploy)
 		if (nodeIds.has('ci')) {
-			edges.push({
-				id: 'ci-site',
-				source: 'ci',
-				target: 'site',
-				label: 'deploy',
-				status: 'idle'
-			});
+			edges.push({ id: 'ci-site', source: 'ci', target: 'site', label: 'deploy', status: 'idle' });
 		}
-
-		// Site -> Monitoring
 		if (nodeIds.has('monitoring')) {
-			edges.push({
-				id: 'site-monitoring',
-				source: 'site',
-				target: 'monitoring',
-				label: 'logs',
-				status: 'idle'
-			});
+			edges.push({ id: 'site-monitoring', source: 'site', target: 'monitoring', label: 'logs', status: 'idle' });
 		}
 
 		return edges;
@@ -248,27 +219,25 @@
 		return node ? { x: node.x || 0, y: node.y || 0 } : { x: 0, y: 0 };
 	}
 
-	// Calculate edge path with proper connection points
 	function getEdgePath(
 		source: { x: number; y: number },
 		target: { x: number; y: number }
 	): { x1: number; y1: number; x2: number; y2: number } {
-		const nodeRadius = 24;
+		const nodeRadius = 12;
 		const dx = target.x - source.x;
 		const dy = target.y - source.y;
 		const dist = Math.sqrt(dx * dx + dy * dy);
 
 		if (dist === 0) return { x1: source.x, y1: source.y, x2: target.x, y2: target.y };
 
-		// Normalize and offset by radius
 		const nx = dx / dist;
 		const ny = dy / dist;
 
 		return {
 			x1: source.x + nx * nodeRadius,
 			y1: source.y + ny * nodeRadius,
-			x2: target.x - nx * (nodeRadius + 8),
-			y2: target.y - ny * (nodeRadius + 8)
+			x2: target.x - nx * (nodeRadius + 4),
+			y2: target.y - ny * (nodeRadius + 4)
 		};
 	}
 
@@ -277,120 +246,178 @@
 			window.open(node.dashboardUrl, '_blank', 'noopener,noreferrer');
 		}
 	}
+
+	function zoomIn() {
+		scale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
+	}
+
+	function zoomOut() {
+		scale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
+	}
+
+	function handleWheel(e: WheelEvent) {
+		e.preventDefault();
+		const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+		const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
+
+		if (containerEl) {
+			const rect = containerEl.getBoundingClientRect();
+			const mouseX = e.clientX - rect.left;
+			const mouseY = e.clientY - rect.top;
+
+			// Adjust pan to zoom toward cursor
+			const scaleChange = newScale / scale;
+			panX = mouseX - (mouseX - panX) * scaleChange;
+			panY = mouseY - (mouseY - panY) * scaleChange;
+		}
+
+		scale = newScale;
+	}
+
+	function resetZoom() {
+		scale = 1;
+		panX = 0;
+		panY = 0;
+	}
 </script>
 
-<div class="w-full h-full min-h-[18rem]">
-	<svg viewBox="0 0 460 290" class="w-full h-full" preserveAspectRatio="xMidYMid meet">
-		<defs>
-			<!-- Arrow markers -->
-			<marker
-				id="arrowhead-active"
-				markerWidth="10"
-				markerHeight="8"
-				refX="9"
-				refY="4"
-				orient="auto"
-			>
-				<polygon points="0 0, 10 4, 0 8" fill="#22c55e" />
-			</marker>
-			<marker id="arrowhead-idle" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-				<polygon points="0 0, 10 4, 0 8" fill="#4b5563" />
-			</marker>
+<div class="relative w-full h-full" bind:this={containerEl}>
+	<!-- Zoom Controls -->
+	<div class="absolute top-2 right-2 flex items-center gap-1 z-10">
+		<button
+			onclick={zoomOut}
+			class="p-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
+			title="Zoom out"
+		>
+			<Minus class="w-3 h-3" />
+		</button>
+		<button
+			onclick={resetZoom}
+			class="px-1.5 py-0.5 bg-gray-700 hover:bg-gray-600 rounded text-[10px] text-gray-300 transition-colors min-w-[2.5rem]"
+			title="Reset zoom"
+		>
+			{Math.round(scale * 100)}%
+		</button>
+		<button
+			onclick={zoomIn}
+			class="p-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
+			title="Zoom in"
+		>
+			<Plus class="w-3 h-3" />
+		</button>
+	</div>
 
-			<!-- Animated dash pattern -->
-			{#if animated}
-				<style>
-					@keyframes flowDash {
-						to {
-							stroke-dashoffset: -20;
+	<!-- Diagram Canvas -->
+	<div
+		class="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
+		onwheel={handleWheel}
+	>
+		<svg
+			viewBox="0 0 230 150"
+			class="w-full h-full"
+			preserveAspectRatio="xMidYMid meet"
+			style="transform: scale({scale}) translate({panX / scale}px, {panY / scale}px); transform-origin: center;"
+		>
+			<defs>
+				<marker id="arrow-active" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+					<polygon points="0 0, 6 2.5, 0 5" fill="#22c55e" />
+				</marker>
+				<marker id="arrow-idle" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+					<polygon points="0 0, 6 2.5, 0 5" fill="#4b5563" />
+				</marker>
+
+				{#if animated}
+					<style>
+						@keyframes flowDash {
+							to { stroke-dashoffset: -12; }
 						}
-					}
-					.flow-animated {
-						stroke-dasharray: 6 6;
-						animation: flowDash 0.8s linear infinite;
-					}
-				</style>
-			{/if}
-		</defs>
-
-		<!-- Edges -->
-		{#each edges as edge}
-			{@const source = getNodePosition(edge.source)}
-			{@const target = getNodePosition(edge.target)}
-			{@const path = getEdgePath(source, target)}
-			{@const isActive = edge.status === 'active'}
-			<g>
-				<line
-					x1={path.x1}
-					y1={path.y1}
-					x2={path.x2}
-					y2={path.y2}
-					stroke={isActive ? '#22c55e' : '#4b5563'}
-					stroke-width="2"
-					marker-end={isActive ? 'url(#arrowhead-active)' : 'url(#arrowhead-idle)'}
-					class={animated && isActive ? 'flow-animated' : ''}
-				/>
-				{#if edge.label}
-					<text
-						x={(source.x + target.x) / 2}
-						y={(source.y + target.y) / 2 - 6}
-						text-anchor="middle"
-						class="text-[10px] fill-gray-500"
-					>
-						{edge.label}
-					</text>
+						.flow-animated {
+							stroke-dasharray: 4 4;
+							animation: flowDash 0.8s linear infinite;
+						}
+					</style>
 				{/if}
-			</g>
-		{/each}
+			</defs>
 
-		<!-- Nodes -->
-		{#each nodes as node}
-			{@const IconComponent = nodeIcons[node.type] || Server}
-			{@const color = nodeColors[node.type] || '#6b7280'}
-			{@const nodeX = node.x ?? 0}
-			{@const nodeY = node.y ?? 0}
-			{@const isClickable = !!node.dashboardUrl}
-			<g
-				transform="translate({nodeX}, {nodeY})"
-				class={isClickable ? 'cursor-pointer' : ''}
-				onclick={() => handleNodeClick(node)}
-				onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node)}
-				role={isClickable ? 'button' : undefined}
-				tabindex={isClickable ? 0 : undefined}
-			>
-				<!-- Node circle -->
-				<circle
-					cx="0"
-					cy="0"
-					r="24"
-					fill="#1f2937"
-					stroke={color}
-					stroke-width="2"
-					class="transition-all {isClickable ? 'hover:stroke-[3px] hover:fill-gray-800' : ''}"
-				/>
+			<!-- Edges -->
+			{#each edges as edge}
+				{@const source = getNodePosition(edge.source)}
+				{@const target = getNodePosition(edge.target)}
+				{@const path = getEdgePath(source, target)}
+				{@const isActive = edge.status === 'active'}
+				<g>
+					<line
+						x1={path.x1}
+						y1={path.y1}
+						x2={path.x2}
+						y2={path.y2}
+						stroke={isActive ? '#22c55e' : '#4b5563'}
+						stroke-width="1"
+						marker-end={isActive ? 'url(#arrow-active)' : 'url(#arrow-idle)'}
+						class={animated && isActive ? 'flow-animated' : ''}
+					/>
+					{#if edge.label}
+						<text
+							x={(source.x + target.x) / 2}
+							y={(source.y + target.y) / 2 - 3}
+							text-anchor="middle"
+							class="text-[6px] fill-gray-500"
+						>
+							{edge.label}
+						</text>
+					{/if}
+				</g>
+			{/each}
 
-				<!-- Icon (positioned in center) -->
-				<foreignObject x="-14" y="-14" width="28" height="28">
-					<div class="flex items-center justify-center w-full h-full" style="color: {color}">
-						<IconComponent class="w-5 h-5" />
-					</div>
-				</foreignObject>
+			<!-- Nodes -->
+			{#each nodes as node}
+				{@const IconComponent = nodeIcons[node.type] || Server}
+				{@const color = nodeColors[node.type] || '#6b7280'}
+				{@const nodeX = node.x ?? 0}
+				{@const nodeY = node.y ?? 0}
+				{@const isClickable = !!node.dashboardUrl}
+				<g
+					transform="translate({nodeX}, {nodeY})"
+					class={isClickable ? 'cursor-pointer' : ''}
+					onclick={() => handleNodeClick(node)}
+					onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node)}
+					role={isClickable ? 'button' : undefined}
+					tabindex={isClickable ? 0 : undefined}
+				>
+					<!-- Node circle -->
+					<circle
+						cx="0"
+						cy="0"
+						r="12"
+						fill="#1f2937"
+						stroke={color}
+						stroke-width="1.5"
+						class="transition-all {isClickable ? 'hover:stroke-2 hover:fill-gray-800' : ''}"
+					/>
 
-				<!-- Label -->
-				<text x="0" y="40" text-anchor="middle" class="text-[11px] fill-gray-300 font-medium">
-					{node.label.length > 12 ? node.label.slice(0, 11) + '..' : node.label}
-				</text>
-
-				<!-- Clickable indicator -->
-				{#if isClickable}
-					<circle cx="18" cy="-18" r="6" fill="#374151" stroke={color} stroke-width="1" />
-					<foreignObject x="12" y="-24" width="12" height="12">
-						<div class="flex items-center justify-center w-full h-full text-gray-400">
-							<ExternalLink class="w-2.5 h-2.5" />
+					<!-- Icon -->
+					<foreignObject x="-7" y="-7" width="14" height="14">
+						<div class="flex items-center justify-center w-full h-full" style="color: {color}">
+							<IconComponent class="w-2.5 h-2.5" />
 						</div>
 					</foreignObject>
-				{/if}
-			</g>
-		{/each}
-	</svg>
+
+					<!-- Label -->
+					<text x="0" y="20" text-anchor="middle" class="text-[7px] fill-gray-400">
+						{node.label.length > 10 ? node.label.slice(0, 9) + '..' : node.label}
+					</text>
+
+					<!-- Clickable indicator -->
+					{#if isClickable}
+						<circle cx="9" cy="-9" r="3" fill="#374151" stroke={color} stroke-width="0.5" />
+						<foreignObject x="6" y="-12" width="6" height="6">
+							<div class="flex items-center justify-center w-full h-full text-gray-400">
+								<ExternalLink class="w-1.5 h-1.5" />
+							</div>
+						</foreignObject>
+					{/if}
+				</g>
+			{/each}
+		</svg>
+	</div>
 </div>
