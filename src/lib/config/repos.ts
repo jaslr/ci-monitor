@@ -13,8 +13,7 @@ export const repos: Record<string, string[]> = {
 		'vastpuddle.com.au',
 		'support.junipa.com.au',
 		'junipa-organisations',
-		'junipa.com.au',
-		'learnjunipa'
+		'junipa.com.au'
 	]
 };
 
