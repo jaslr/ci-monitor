@@ -20,7 +20,8 @@ export const load: PageServerLoad = async () => {
 					status: 'unknown',
 					conclusion: null,
 					html_url: `https://github.com/${owner}/${repo}/actions`,
-					workflow_name: null
+					workflow_name: null,
+					run_date: null
 				});
 			}
 			continue;

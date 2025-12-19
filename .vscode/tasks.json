@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev: Observatory (Full Stack)",
+      "dependsOn": ["Dev: PocketBase", "Dev: SvelteKit"],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Dev: SvelteKit (Port 4573)",
+      "type": "shell",
+      "command": "npm run dev -- --port 4573",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE",
+          "endsPattern": "ready in"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "observatory"
+      }
+    },
+    {
+      "label": "Dev: PocketBase (Port 4617)",
+      "type": "shell",
+      "command": "pocketbase serve --http=127.0.0.1:4617 --dir=./data/pb_data",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Server started",
+          "endsPattern": "REST API"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "observatory"
+      }
+    },
+    {
+      "label": "Stop: All Observatory Services",
+      "type": "shell",
+      "command": "pkill -f 'vite.*4573' 2>/dev/null; pkill -f 'pocketbase.*4617' 2>/dev/null; echo 'Services stopped'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Check: Active Ports",
+      "type": "shell",
+      "command": "echo '=== Observatory Ports ===' && lsof -i :4573,:4617 2>/dev/null || echo 'Observatory ports free' && echo '' && echo '=== All Listening Ports ===' && lsof -i -P -n 2>/dev/null | grep LISTEN | awk '{print $1, $9}' | sort -t: -k2 -n | uniq",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Deploy: Get It Live",
+      "type": "shell",
+      "command": "npm run get-it-live",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}
