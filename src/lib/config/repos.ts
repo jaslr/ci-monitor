@@ -6,10 +6,17 @@ export const repos: Record<string, string[]> = {
 		'brontiq',
 		'shippywhippy',
 		'loadmanagement',
-		'Ladderbox'
+		'Ladderbox',
+		'littlelistoflights'
 	],
 	'jvp-ux': [
-		'vastpuddle.com.au'
+		'vastpuddle.com.au',
+		'support.junipa.com.au',
+		'junipa-organisations',
+		'junipa.com.au',
+		'learnjunipa',
+		'learn-junipa-conifa',
+		'learn-junipa'
 	]
 };
 
