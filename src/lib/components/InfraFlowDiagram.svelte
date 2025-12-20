@@ -24,15 +24,22 @@
 
 	let { services, projectName, domain, animated = true }: Props = $props();
 
-	// Zoom state - start at comfortable viewing size
-	let scale = $state(1.8);
+	// Zoom and pan state
+	let scale = $state(1);
 	let panX = $state(0);
 	let panY = $state(0);
 	let containerEl: HTMLDivElement | null = $state(null);
 
+	// Drag state
+	let isDragging = $state(false);
+	let dragStartX = $state(0);
+	let dragStartY = $state(0);
+	let dragStartPanX = $state(0);
+	let dragStartPanY = $state(0);
+
 	const MIN_SCALE = 0.5;
-	const MAX_SCALE = 4;
-	const ZOOM_STEP = 0.2;
+	const MAX_SCALE = 3;
+	const ZOOM_STEP = 0.15;
 
 	// Build nodes from services - include dashboard URLs
 	let nodes = $derived(buildNodes(services, projectName, domain));
@@ -275,9 +282,38 @@
 	}
 
 	function resetZoom() {
-		scale = 1.8;
+		scale = 1;
 		panX = 0;
 		panY = 0;
+	}
+
+	function handleMouseDown(e: MouseEvent) {
+		// Don't start drag if clicking on a node
+		if ((e.target as HTMLElement).closest('g[role="button"]')) return;
+
+		isDragging = true;
+		dragStartX = e.clientX;
+		dragStartY = e.clientY;
+		dragStartPanX = panX;
+		dragStartPanY = panY;
+	}
+
+	function handleMouseMove(e: MouseEvent) {
+		if (!isDragging) return;
+
+		const dx = e.clientX - dragStartX;
+		const dy = e.clientY - dragStartY;
+
+		panX = dragStartPanX + dx / scale;
+		panY = dragStartPanY + dy / scale;
+	}
+
+	function handleMouseUp() {
+		isDragging = false;
+	}
+
+	function handleMouseLeave() {
+		isDragging = false;
 	}
 </script>
 
@@ -309,8 +345,14 @@
 
 	<!-- Diagram Canvas -->
 	<div
-		class="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
+		class="w-full h-full overflow-hidden select-none {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 		onwheel={handleWheel}
+		onmousedown={handleMouseDown}
+		onmousemove={handleMouseMove}
+		onmouseup={handleMouseUp}
+		onmouseleave={handleMouseLeave}
+		role="application"
+		aria-label="Infrastructure diagram - drag to pan, scroll to zoom"
 	>
 		<svg
 			viewBox="0 0 230 150"
