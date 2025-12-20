@@ -24,15 +24,15 @@
 
 	let { services, projectName, domain, animated = true }: Props = $props();
 
-	// Zoom state
-	let scale = $state(1);
+	// Zoom state - start smaller so diagram fits better
+	let scale = $state(0.7);
 	let panX = $state(0);
 	let panY = $state(0);
 	let containerEl: HTMLDivElement | null = $state(null);
 
-	const MIN_SCALE = 0.5;
-	const MAX_SCALE = 3;
-	const ZOOM_STEP = 0.2;
+	const MIN_SCALE = 0.3;
+	const MAX_SCALE = 2;
+	const ZOOM_STEP = 0.1;
 
 	// Build nodes from services - include dashboard URLs
 	let nodes = $derived(buildNodes(services, projectName, domain));
@@ -275,7 +275,7 @@
 	}
 
 	function resetZoom() {
-		scale = 1;
+		scale = 0.7;
 		panX = 0;
 		panY = 0;
 	}
@@ -283,24 +283,24 @@
 
 <div class="relative w-full h-full" bind:this={containerEl}>
 	<!-- Zoom Controls -->
-	<div class="absolute top-2 right-2 flex items-center gap-1 z-10">
+	<div class="absolute top-1 right-1 flex items-center gap-0.5 z-20 bg-gray-800/90 backdrop-blur rounded px-1 py-0.5 border border-gray-600">
 		<button
 			onclick={zoomOut}
-			class="p-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
+			class="p-1 hover:bg-gray-700 rounded text-gray-300 transition-colors"
 			title="Zoom out"
 		>
 			<Minus class="w-3 h-3" />
 		</button>
 		<button
 			onclick={resetZoom}
-			class="px-1.5 py-0.5 bg-gray-700 hover:bg-gray-600 rounded text-[10px] text-gray-300 transition-colors min-w-[2.5rem]"
+			class="px-1 py-0.5 hover:bg-gray-700 rounded text-[9px] text-gray-300 transition-colors min-w-[2rem] text-center"
 			title="Reset zoom"
 		>
 			{Math.round(scale * 100)}%
 		</button>
 		<button
 			onclick={zoomIn}
-			class="p-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
+			class="p-1 hover:bg-gray-700 rounded text-gray-300 transition-colors"
 			title="Zoom in"
 		>
 			<Plus class="w-3 h-3" />
