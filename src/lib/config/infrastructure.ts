@@ -18,6 +18,29 @@ export const INFRASTRUCTURE: Record<string, {
   repoOwner: string;
 }> = {
   // ==========================================================================
+  // CI-MONITOR - This application (monitors itself!)
+  // ==========================================================================
+  'ci-monitor': {
+    displayName: 'Infrastructure Observatory',
+    identity: 'jaslr',
+    repoOwner: 'jaslr',
+    services: [
+      { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/ci-monitor' },
+      { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/ci-monitor/actions' },
+    ],
+    stack: {
+      framework: 'sveltekit',
+      frameworkVersion: '2.x',
+      language: 'typescript',
+      css: ['tailwind'],
+      icons: 'lucide',
+      testing: [],
+      buildTool: 'vite',
+      packageManager: 'npm',
+    },
+  },
+
+  // ==========================================================================
   // LIVNA - Full-featured SvelteKit app
   // ==========================================================================
   livna: {

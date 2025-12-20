@@ -2,6 +2,7 @@
 // Format: { owner: [repo1, repo2, ...] }
 export const repos: Record<string, string[]> = {
 	jaslr: [
+		'ci-monitor',
 		'livna',
 		'brontiq',
 		'shippywhippy',

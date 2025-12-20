@@ -24,15 +24,15 @@
 
 	let { services, projectName, domain, animated = true }: Props = $props();
 
-	// Zoom state - start smaller so diagram fits better
-	let scale = $state(0.7);
+	// Zoom state - start at comfortable viewing size
+	let scale = $state(1.8);
 	let panX = $state(0);
 	let panY = $state(0);
 	let containerEl: HTMLDivElement | null = $state(null);
 
-	const MIN_SCALE = 0.3;
-	const MAX_SCALE = 2;
-	const ZOOM_STEP = 0.1;
+	const MIN_SCALE = 0.5;
+	const MAX_SCALE = 4;
+	const ZOOM_STEP = 0.2;
 
 	// Build nodes from services - include dashboard URLs
 	let nodes = $derived(buildNodes(services, projectName, domain));
@@ -275,7 +275,7 @@
 	}
 
 	function resetZoom() {
-		scale = 0.7;
+		scale = 1.8;
 		panX = 0;
 		panY = 0;
 	}
