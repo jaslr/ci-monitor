@@ -44,8 +44,8 @@
 	let nodes = $derived(buildNodes(services, projectName, domain));
 	let edges = $derived(buildEdges(nodes));
 
-	// Auto-scale based on number of nodes - start small, scale up with complexity
-	let baseScale = $derived(Math.min(0.8, 0.4 + nodes.length * 0.05));
+	// Default to 100% scale
+	let baseScale = $derived(1);
 	let scale = $state(1);
 
 	// Initialize scale when nodes change

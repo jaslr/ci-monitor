@@ -244,7 +244,7 @@
 								<div class="px-4 pb-4 bg-gray-850">
 									<!-- Flow Diagram - Compact -->
 									<div class="py-3">
-										<div class="bg-gray-900 rounded-lg p-3 h-40">
+										<div class="bg-gray-900 p-3 h-40">
 											<InfraFlowDiagram
 												services={repoInfra.services}
 												projectName={repoInfra.displayName}
@@ -256,7 +256,7 @@
 									<div class="grid grid-cols-2 gap-3 text-xs">
 										{#each [...grouped.entries()] as [category, services]}
 											{@const IconComponent = categoryIcons[category] || Server}
-											<div class="bg-gray-800 rounded p-2">
+											<div class="bg-gray-800 p-2">
 												<div class="flex items-center gap-1 text-gray-500 uppercase tracking-wider mb-1">
 													<IconComponent class="w-3 h-3" />
 													<span>{category}</span>
@@ -314,16 +314,13 @@
 						</div>
 					</div>
 
-					<!-- Flow Diagram - Dynamic Height based on service count -->
+					<!-- Flow Diagram -->
 					<div class="shrink-0 px-6 py-4 border-b border-gray-700">
 						<div class="flex items-center justify-between mb-2">
 							<div class="text-xs text-gray-500 uppercase tracking-wider">Infrastructure Flow</div>
 							<div class="text-xs text-gray-600">Drag to pan • Scroll to zoom</div>
 						</div>
-						<div
-							class="bg-gray-900 rounded-lg p-3 pt-8"
-							style="height: {selectedInfra.services.length <= 2 ? '8rem' : selectedInfra.services.length <= 4 ? '10rem' : '14rem'}"
-						>
+						<div class="bg-gray-900 p-3 pt-8 min-h-[10rem]">
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}
@@ -336,31 +333,31 @@
 						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 							<!-- Tech Stack -->
 							{#if selectedInfra.stack}
-								<div class="bg-gray-800 rounded-lg p-4">
+								<div class="bg-gray-800 p-4">
 									<div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Tech Stack</div>
 									<div class="flex flex-wrap gap-2">
 										{#if selectedInfra.stack.framework}
-											<span class="px-3 py-1.5 bg-gray-700 rounded text-sm text-blue-400">
+											<span class="px-3 py-1.5 bg-gray-700 text-sm text-blue-400">
 												{selectedInfra.stack.framework}
 											</span>
 										{/if}
 										{#each selectedInfra.stack.css || [] as css}
-											<span class="px-3 py-1.5 bg-gray-700 rounded text-sm text-cyan-400">
+											<span class="px-3 py-1.5 bg-gray-700 text-sm text-cyan-400">
 												{css}
 											</span>
 										{/each}
 										{#if selectedInfra.stack.buildTool}
-											<span class="px-3 py-1.5 bg-gray-700 rounded text-sm text-yellow-400">
+											<span class="px-3 py-1.5 bg-gray-700 text-sm text-yellow-400">
 												{selectedInfra.stack.buildTool}
 											</span>
 										{/if}
 										{#if selectedInfra.stack.language}
-											<span class="px-3 py-1.5 bg-gray-700 rounded text-sm text-gray-400">
+											<span class="px-3 py-1.5 bg-gray-700 text-sm text-gray-400">
 												{selectedInfra.stack.language}
 											</span>
 										{/if}
 										{#if selectedInfra.stack.packageManager}
-											<span class="px-3 py-1.5 bg-gray-700 rounded text-sm text-gray-500">
+											<span class="px-3 py-1.5 bg-gray-700 text-sm text-gray-500">
 												{selectedInfra.stack.packageManager}
 											</span>
 										{/if}
@@ -369,7 +366,7 @@
 							{/if}
 
 							<!-- Services List with Links -->
-							<div class="bg-gray-800 rounded-lg p-4">
+							<div class="bg-gray-800 p-4">
 								<div class="text-xs text-gray-500 uppercase tracking-wider mb-3">Services</div>
 								<div class="space-y-3">
 									{#each [...grouped.entries()] as [category, services]}
