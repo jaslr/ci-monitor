@@ -320,7 +320,7 @@
 							<div class="text-xs text-gray-500 uppercase tracking-wider">Infrastructure Flow</div>
 							<div class="text-xs text-gray-600">Drag to pan • Scroll to zoom</div>
 						</div>
-						<div class="bg-gray-900 p-3 pt-8 min-h-[10rem]">
+						<div class="bg-gray-900 p-3 pt-8">
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}

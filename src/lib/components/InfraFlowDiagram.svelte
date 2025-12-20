@@ -337,7 +337,7 @@
 	}
 </script>
 
-<div class="relative w-full h-full" bind:this={containerEl}>
+<div class="relative w-full" bind:this={containerEl}>
 	<!-- Zoom Controls - outside diagram -->
 	<div class="absolute -top-6 right-0 flex items-center gap-1 z-20">
 		<button
@@ -365,7 +365,7 @@
 
 	<!-- Diagram Canvas -->
 	<div
-		class="w-full h-full overflow-hidden select-none {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
+		class="w-full overflow-hidden select-none {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
 		onwheel={handleWheel}
 		onmousedown={handleMouseDown}
 		onmousemove={handleMouseMove}
@@ -376,9 +376,8 @@
 	>
 		<svg
 			viewBox="0 0 230 150"
-			class="w-full h-full"
-			preserveAspectRatio="xMidYMid meet"
-			style="transform: scale({scale}) translate({panX / scale}px, {panY / scale}px); transform-origin: center;"
+			class="w-full"
+			style="aspect-ratio: 230/150; transform: scale({scale}) translate({panX / scale}px, {panY / scale}px); transform-origin: center;"
 		>
 			<defs>
 				<marker id="arrow-active" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
