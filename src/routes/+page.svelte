@@ -113,16 +113,21 @@
 <div class="min-h-screen bg-gray-900 text-white flex flex-col">
 	<!-- Header -->
 	<header class="shrink-0 px-4 py-3 border-b border-gray-800">
-		<div class="flex items-center justify-between">
-			<div>
-				<h1 class="text-lg font-semibold text-gray-100">Infrastructure Observatory</h1>
-				<p class="text-xs text-gray-500">Last updated: {formatTime(data.lastUpdated)}</p>
-			</div>
+		<div>
+			<h1 class="text-lg font-semibold text-gray-100">Infrastructure Observatory</h1>
+			<p class="text-xs text-gray-500">Last updated: {formatTime(data.lastUpdated)}</p>
+		</div>
+	</header>
+
+	<!-- Main Content - Responsive Layout -->
+	<div class="flex-1 flex flex-col lg:flex-row min-h-0">
+		<!-- Left Sidebar - Repo List (hidden on small, shown on lg+) -->
+		<aside class="hidden lg:flex lg:flex-col w-[20rem] shrink-0 border-r border-gray-800 bg-gray-900">
 			<!-- Sort Options -->
-			<div class="flex gap-1">
+			<div class="shrink-0 px-4 py-2 border-b border-gray-800 flex gap-1">
 				<button
 					onclick={() => (sortBy = 'name')}
-					class="px-2 py-1 text-xs rounded {sortBy === 'name'
+					class="px-2 py-1 text-xs rounded cursor-pointer {sortBy === 'name'
 						? 'bg-blue-600'
 						: 'bg-gray-700 hover:bg-gray-600'} transition-colors"
 				>
@@ -130,7 +135,7 @@
 				</button>
 				<button
 					onclick={() => (sortBy = 'account')}
-					class="px-2 py-1 text-xs rounded {sortBy === 'account'
+					class="px-2 py-1 text-xs rounded cursor-pointer {sortBy === 'account'
 						? 'bg-blue-600'
 						: 'bg-gray-700 hover:bg-gray-600'} transition-colors"
 				>
@@ -138,32 +143,27 @@
 				</button>
 				<button
 					onclick={() => (sortBy = 'recent')}
-					class="px-2 py-1 text-xs rounded {sortBy === 'recent'
+					class="px-2 py-1 text-xs rounded cursor-pointer {sortBy === 'recent'
 						? 'bg-blue-600'
 						: 'bg-gray-700 hover:bg-gray-600'} transition-colors"
 				>
 					Recent
 				</button>
 			</div>
-		</div>
-	</header>
 
-	<!-- Main Content - Responsive Layout -->
-	<div class="flex-1 flex flex-col lg:flex-row min-h-0">
-		<!-- Left Sidebar - Repo List (hidden on small, shown on lg+) -->
-		<aside class="hidden lg:block w-[20rem] shrink-0 border-r border-gray-800 overflow-y-auto bg-gray-900">
+			<!-- Repo List -->
 			{#if data.statuses.length === 0}
 				<div class="p-4 text-center text-gray-500">
 					<p>No repos configured.</p>
 				</div>
 			{:else}
-				<div class="py-1">
+				<div class="flex-1 overflow-y-auto py-1">
 					{#each displayStatuses as status (status.repo)}
 						{@const repoInfra = getInfra(status.repo)}
 						{@const isSelected = selectedRepo === status.repo}
 						<button
 							onclick={() => selectRepo(status.repo)}
-							class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors {isSelected
+							class="w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer transition-colors {isSelected
 								? 'bg-gray-800 border-l-2 border-blue-500'
 								: 'hover:bg-gray-800/50 border-l-2 border-transparent'}"
 						>
@@ -206,7 +206,7 @@
 							<!-- Accordion Header -->
 							<button
 								onclick={() => selectRepo(status.repo)}
-								class="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors {isExpanded
+								class="w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer transition-colors {isExpanded
 									? 'bg-gray-800'
 									: 'hover:bg-gray-800/50'}"
 							>
@@ -314,10 +314,10 @@
 						</div>
 					</div>
 
-					<!-- Flow Diagram - Compact -->
+					<!-- Flow Diagram - Auto Height -->
 					<div class="shrink-0 px-6 py-4 border-b border-gray-700">
 						<div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Infrastructure Flow</div>
-						<div class="bg-gray-900 rounded-lg p-3 h-48">
+						<div class="bg-gray-900 rounded-lg p-3 min-h-[12rem]">
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}
