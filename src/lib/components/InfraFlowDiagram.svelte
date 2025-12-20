@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { InfraNode, InfraEdge, InfraService } from '$lib/types/infrastructure';
 	import {
-		User,
 		Globe,
 		Cloud,
 		Server,
@@ -81,10 +80,9 @@
 	});
 
 	const nodeIcons: Record<string, typeof Cloud> = {
-		user: User,
 		dns: Globe,
 		cdn: Cloud,
-		site: ExternalLink,
+		site: Globe,
 		hosting: Cloud,
 		api: Server,
 		database: Database,
@@ -95,7 +93,6 @@
 	};
 
 	const nodeColors: Record<string, string> = {
-		user: '#6366f1',
 		dns: '#06b6d4',
 		cdn: '#f97316',
 		site: '#10b981',
@@ -127,17 +124,7 @@
 		const backendStartY = backendCount === 1 ? 70 : backendCount === 2 ? 50 : 30;
 		const backendSpacing = 40;
 
-		// User node - left side
-		nodes.push({
-			id: 'user',
-			type: 'user',
-			label: 'Users',
-			status: 'healthy',
-			x: 30,
-			y: 70
-		});
-
-		// Hosting/Site node - center
+		// Site node - left side (front-facing application with globe icon)
 		const hostingService = services.find((s) => s.category === 'hosting');
 		nodes.push({
 			id: 'site',
@@ -146,7 +133,7 @@
 			provider: hostingService?.provider,
 			status: hostingService?.status || 'unknown',
 			dashboardUrl: hostingService?.dashboardUrl,
-			x: 110,
+			x: 70,
 			y: 70
 		});
 
@@ -162,7 +149,7 @@
 				provider: dbService.provider,
 				status: dbService.status,
 				dashboardUrl: dbService.dashboardUrl,
-				x: 190,
+				x: 150,
 				y: backendY
 			});
 			backendY += backendSpacing;
@@ -177,7 +164,7 @@
 				provider: authService.provider,
 				status: authService.status,
 				dashboardUrl: authService.dashboardUrl,
-				x: 190,
+				x: 150,
 				y: backendY
 			});
 			backendY += backendSpacing;
@@ -192,7 +179,7 @@
 				provider: storageService.provider,
 				status: storageService.status,
 				dashboardUrl: storageService.dashboardUrl,
-				x: 190,
+				x: 150,
 				y: backendY
 			});
 		}
@@ -203,11 +190,11 @@
 			nodes.push({
 				id: 'ci',
 				type: 'ci',
-				label: 'CI/CD',
+				label: 'Deploy',
 				provider: ciService.provider,
 				status: ciService.status,
 				dashboardUrl: ciService.dashboardUrl,
-				x: 110,
+				x: 70,
 				y: 15
 			});
 		}
@@ -222,7 +209,7 @@
 				provider: monitoringService.provider,
 				status: monitoringService.status,
 				dashboardUrl: monitoringService.dashboardUrl,
-				x: 110,
+				x: 70,
 				y: 125
 			});
 		}
@@ -234,9 +221,6 @@
 		const edges: InfraEdge[] = [];
 		const nodeIds = new Set(nodes.map((n) => n.id));
 
-		if (nodeIds.has('site')) {
-			edges.push({ id: 'user-site', source: 'user', target: 'site', status: 'active' });
-		}
 		if (nodeIds.has('database')) {
 			edges.push({ id: 'site-database', source: 'site', target: 'database', status: 'active' });
 		}
@@ -247,10 +231,10 @@
 			edges.push({ id: 'site-storage', source: 'site', target: 'storage', status: 'active' });
 		}
 		if (nodeIds.has('ci')) {
-			edges.push({ id: 'ci-site', source: 'ci', target: 'site', label: 'deploy', status: 'idle' });
+			edges.push({ id: 'ci-site', source: 'ci', target: 'site', status: 'idle' });
 		}
 		if (nodeIds.has('monitoring')) {
-			edges.push({ id: 'site-monitoring', source: 'site', target: 'monitoring', label: 'logs', status: 'idle' });
+			edges.push({ id: 'site-monitoring', source: 'site', target: 'monitoring', status: 'idle' });
 		}
 
 		return edges;
@@ -516,12 +500,20 @@
 						{node.label.length > 10 ? node.label.slice(0, 9) + '..' : node.label}
 					</text>
 
-					<!-- Clickable indicator -->
+					<!-- Clickable indicator (external link) -->
 					{#if isClickable}
-						<circle cx="9" cy="-9" r="3" fill="#374151" />
 						<foreignObject x="6" y="-12" width="6" height="6">
 							<div class="flex items-center justify-center w-full h-full text-gray-400">
 								<ExternalLink class="w-1.5 h-1.5" />
+							</div>
+						</foreignObject>
+					{/if}
+
+					<!-- Error indicator (shows when node has error/down status) -->
+					{#if node.status === 'down' || node.status === 'degraded'}
+						<foreignObject x="-12" y="-12" width="6" height="6">
+							<div class="flex items-center justify-center w-full h-full text-red-500">
+								<AlertTriangle class="w-2 h-2" />
 							</div>
 						</foreignObject>
 					{/if}

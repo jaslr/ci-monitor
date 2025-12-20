@@ -271,6 +271,20 @@
 								<div class="text-xs text-gray-500 truncate">{status.owner}</div>
 							</div>
 
+							<!-- Error Link (clickable, goes to problematic service) -->
+							{#if status.status === 'failure'}
+								<a
+									href={status.html_url}
+									target="_blank"
+									rel="noopener noreferrer"
+									onclick={(e) => e.stopPropagation()}
+									class="p-1 -m-1 text-red-400 hover:text-red-300 transition-colors shrink-0"
+									title="View failed workflow"
+								>
+									<AlertTriangle class="w-4 h-4" />
+								</a>
+							{/if}
+
 							<!-- Service Count -->
 							{#if repoInfra}
 								<div class="flex items-center gap-1 text-xs text-gray-500 shrink-0">
@@ -313,6 +327,20 @@
 									</div>
 									<div class="text-xs text-gray-500 truncate">{status.owner}</div>
 								</div>
+
+								<!-- Error Link (clickable, goes to problematic service) -->
+								{#if status.status === 'failure'}
+									<a
+										href={status.html_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										onclick={(e) => e.stopPropagation()}
+										class="p-1 -m-1 text-red-400 hover:text-red-300 transition-colors shrink-0"
+										title="View failed workflow"
+									>
+										<AlertTriangle class="w-4 h-4" />
+									</a>
+								{/if}
 
 								<!-- Service Count & Expand Icon -->
 								{#if repoInfra}
