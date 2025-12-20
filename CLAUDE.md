@@ -90,16 +90,14 @@ bd ready           # Check beads issues
 **Every code change gets deployed to production.** After completing any task:
 ```bash
 npm version patch --no-git-tag-version  # Bump version
-git add -A                               # Stage all changes
-git commit -m "v0.x.x: Description"      # Commit with version
-git push                                 # Push to remote
+git add -A && git commit -m "v0.x.x: Description"  # Commit
 npm run build                            # Build locally
 wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor  # Deploy
-wrangler pages deployment list --project-name=ci-monitor | head -10     # Verify
+wrangler pages deployment list --project-name=ci-monitor | head -8      # Verify
 ```
 
-**Note:** This project deploys via direct Wrangler push, not GitHub Actions.
-The GitHub integration may be slow/unreliable, so use `wrangler pages deploy` directly.
+**Note:** This project deploys directly via Wrangler - no need to push to GitHub first.
+Git commits are for local history; Wrangler deploys straight to Cloudflare.
 
 ### VS Code Tasks
 
