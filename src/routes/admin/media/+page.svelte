@@ -16,7 +16,7 @@
 
 	let selectedFile = $state<File | null>(null);
 	let isUploading = $state(false);
-	let selectedItem = $state<{ type: 'infra' | 'techstack'; name: string } | null>(null);
+	let selectedItem = $state<{ type: 'infra' | 'techstack'; name: string; displayName: string } | null>(null);
 
 	function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -25,136 +25,112 @@
 		}
 	}
 
-	function selectItem(type: 'infra' | 'techstack', name: string) {
-		selectedItem = { type, name };
+	function selectItem(type: 'infra' | 'techstack', name: string, displayName: string) {
+		selectedItem = { type, name, displayName };
+		selectedFile = null;
+	}
+
+	function clearSelection() {
+		selectedItem = null;
+		selectedFile = null;
 	}
 
 	// Infrastructure providers with their services
 	const infrastructureProviders = [
 		{
-			provider: 'cloudflare',
+			name: 'cloudflare',
 			displayName: 'Cloudflare',
-			services: [
-				{ name: 'cloudflare-pages', display: 'Pages' },
-				{ name: 'cloudflare-r2', display: 'R2 Storage' },
-				{ name: 'cloudflare-dns', display: 'DNS' },
-				{ name: 'cloudflare-cdn', display: 'CDN' },
-				{ name: 'cloudflare-workers', display: 'Workers' }
-			]
+			services: ['Pages', 'R2 Storage', 'DNS', 'CDN', 'Workers']
 		},
 		{
-			provider: 'flyio',
+			name: 'flyio',
 			displayName: 'Fly.io',
-			services: [
-				{ name: 'flyio', display: 'Hosting' },
-				{ name: 'flyio-postgres', display: 'Postgres' }
-			]
+			services: ['Hosting', 'Postgres']
 		},
 		{
-			provider: 'vercel',
+			name: 'vercel',
 			displayName: 'Vercel',
-			services: [
-				{ name: 'vercel', display: 'Hosting' },
-				{ name: 'vercel-postgres', display: 'Postgres' },
-				{ name: 'vercel-blob', display: 'Blob Storage' }
-			]
+			services: ['Hosting', 'Postgres', 'Blob Storage']
 		},
 		{
-			provider: 'netlify',
+			name: 'netlify',
 			displayName: 'Netlify',
-			services: [
-				{ name: 'netlify', display: 'Hosting' },
-				{ name: 'netlify-functions', display: 'Functions' }
-			]
+			services: ['Hosting', 'Functions']
 		},
 		{
-			provider: 'supabase',
+			name: 'supabase',
 			displayName: 'Supabase',
-			services: [
-				{ name: 'supabase-database', display: 'Database' },
-				{ name: 'supabase-auth', display: 'Auth' },
-				{ name: 'supabase-storage', display: 'Storage' },
-				{ name: 'supabase-realtime', display: 'Realtime' },
-				{ name: 'supabase-edge', display: 'Edge Functions' }
-			]
+			services: ['Database', 'Auth', 'Storage', 'Realtime', 'Edge Functions']
 		},
 		{
-			provider: 'planetscale',
+			name: 'planetscale',
 			displayName: 'PlanetScale',
-			services: [{ name: 'planetscale', display: 'Database' }]
+			services: ['Database']
 		},
 		{
-			provider: 'neon',
+			name: 'neon',
 			displayName: 'Neon',
-			services: [{ name: 'neon', display: 'Postgres' }]
+			services: ['Postgres']
 		},
 		{
-			provider: 'aws',
+			name: 'aws',
 			displayName: 'AWS',
-			services: [
-				{ name: 'aws-s3', display: 'S3' },
-				{ name: 'aws-route53', display: 'Route53' },
-				{ name: 'aws-lambda', display: 'Lambda' },
-				{ name: 'aws-cloudfront', display: 'CloudFront' }
-			]
+			services: ['S3', 'Route53', 'Lambda', 'CloudFront']
 		},
 		{
-			provider: 'github',
+			name: 'github',
 			displayName: 'GitHub',
-			services: [
-				{ name: 'github-actions', display: 'Actions' },
-				{ name: 'github-pages', display: 'Pages' }
-			]
+			services: ['Actions', 'Pages']
 		},
 		{
-			provider: 'auth0',
+			name: 'auth0',
 			displayName: 'Auth0',
-			services: [{ name: 'auth0', display: 'Auth' }]
+			services: ['Authentication']
 		},
 		{
-			provider: 'clerk',
+			name: 'clerk',
 			displayName: 'Clerk',
-			services: [{ name: 'clerk', display: 'Auth' }]
+			services: ['Authentication']
 		},
 		{
-			provider: 'sentry',
+			name: 'sentry',
 			displayName: 'Sentry',
-			services: [{ name: 'sentry', display: 'Error Tracking' }]
+			services: ['Error Tracking']
 		},
 		{
-			provider: 'logrocket',
+			name: 'logrocket',
 			displayName: 'LogRocket',
-			services: [{ name: 'logrocket', display: 'Session Replay' }]
+			services: ['Session Replay']
 		},
 		{
-			provider: 'resend',
+			name: 'resend',
 			displayName: 'Resend',
-			services: [{ name: 'resend', display: 'Email' }]
+			services: ['Email']
 		},
 		{
-			provider: 'sendgrid',
+			name: 'sendgrid',
 			displayName: 'SendGrid',
-			services: [{ name: 'sendgrid', display: 'Email' }]
+			services: ['Email']
 		},
 		{
-			provider: 'postmark',
+			name: 'postmark',
 			displayName: 'Postmark',
-			services: [{ name: 'postmark', display: 'Email' }]
+			services: ['Email']
 		},
 		{
-			provider: 'plausible',
+			name: 'plausible',
 			displayName: 'Plausible',
-			services: [{ name: 'plausible', display: 'Analytics' }]
+			services: ['Analytics']
 		},
 		{
-			provider: 'posthog',
+			name: 'posthog',
 			displayName: 'PostHog',
-			services: [{ name: 'posthog', display: 'Analytics' }]
+			services: ['Analytics']
 		},
 		{
-			provider: 'doppler',
+			name: 'doppler',
 			displayName: 'Doppler',
-			services: [{ name: 'doppler', display: 'Secrets' }]
+			services: ['Secrets Management']
 		}
 	];
 
@@ -240,6 +216,12 @@
 
 	// Get existing logo names for highlighting uploaded items
 	const existingLogoNames = $derived(new Set(data.logos?.map((l) => l.name.replace(/\.(svg|png)$/, '')) ?? []));
+
+	// Get logo URL for a provider/item
+	function getLogoUrl(name: string): string | null {
+		const logo = data.logos?.find((l) => l.name.replace(/\.(svg|png)$/, '') === name);
+		return logo?.url ?? null;
+	}
 </script>
 
 <div class="p-6 space-y-8">
@@ -262,12 +244,12 @@
 		</div>
 	{/if}
 
-	<!-- Upload Section -->
+	<!-- Upload Modal/Section -->
 	{#if selectedItem}
-		<section class="bg-gray-800 rounded-lg p-6">
+		<section class="bg-blue-900/30 border border-blue-700 rounded-lg p-6">
 			<h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
 				<Upload class="w-5 h-5 text-blue-400" />
-				Upload Logo: {selectedItem.name}
+				Upload Logo: {selectedItem.displayName}
 			</h3>
 			<p class="text-gray-400 text-sm mb-4">
 				Uploading to: <code class="bg-gray-700 px-2 py-1 rounded">{selectedItem.type}/{selectedItem.name}.svg</code>
@@ -291,7 +273,7 @@
 				<input type="hidden" name="filename" value={selectedItem.name} />
 
 				<div
-					class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors"
+					class="border-2 border-dashed border-blue-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors bg-gray-800/50"
 				>
 					<input
 						type="file"
@@ -302,7 +284,7 @@
 						id="logo-upload"
 					/>
 					<label for="logo-upload" class="cursor-pointer">
-						<Upload class="w-12 h-12 mx-auto text-gray-500 mb-4" />
+						<Upload class="w-12 h-12 mx-auto text-blue-500 mb-4" />
 						{#if selectedFile}
 							<p class="text-white font-medium">{selectedFile.name}</p>
 							<p class="text-gray-500 text-sm mt-1">Click to change or drop a new file</p>
@@ -316,7 +298,7 @@
 				<div class="mt-4 flex justify-between">
 					<button
 						type="button"
-						onclick={() => { selectedItem = null; selectedFile = null; }}
+						onclick={clearSelection}
 						class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
 					>
 						Cancel
@@ -342,33 +324,45 @@
 			<Server class="w-5 h-5 text-blue-400" />
 			Infrastructure
 		</h3>
-		<p class="text-gray-400 text-sm mb-6">
-			Click an item to upload its logo. Items with a green dot already have logos.
-		</p>
 
-		<div class="space-y-4">
+		<div class="space-y-3">
 			{#each infrastructureProviders as provider}
-				<div class="border-b border-gray-700 pb-4 last:border-0 last:pb-0">
-					<h4 class="text-sm font-medium text-gray-300 mb-2">{provider.displayName}</h4>
-					<div class="flex flex-wrap gap-2">
-						{#each provider.services as service}
-							{@const hasLogo = existingLogoNames.has(service.name)}
-							<button
-								type="button"
-								onclick={() => selectItem('infra', service.name)}
-								class="relative px-3 py-1.5 text-sm rounded-lg transition-colors {selectedItem?.name === service.name
-									? 'bg-blue-600 text-white'
-									: hasLogo
-										? 'bg-gray-600 text-gray-200 hover:bg-gray-500'
-										: 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200'}"
-							>
-								{#if hasLogo}
-									<span class="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-								{/if}
-								{service.display}
-							</button>
-						{/each}
+				{@const hasLogo = existingLogoNames.has(provider.name)}
+				{@const logoUrl = getLogoUrl(provider.name)}
+				<div class="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+					<!-- Logo display area -->
+					<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg overflow-hidden">
+						{#if logoUrl}
+							<img src={logoUrl} alt={provider.displayName} class="max-w-full max-h-full object-contain" />
+						{:else}
+							<div class="w-6 h-6 bg-gray-600 rounded"></div>
+						{/if}
 					</div>
+
+					<!-- Provider name and services -->
+					<div class="flex-1 min-w-0">
+						<div class="font-medium text-white">{provider.displayName}</div>
+						<div class="text-xs text-gray-400 truncate">
+							{provider.services.join(' · ')}
+						</div>
+					</div>
+
+					<!-- Upload button -->
+					<button
+						type="button"
+						onclick={() => selectItem('infra', provider.name, provider.displayName)}
+						class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors {hasLogo
+							? 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
+							: 'bg-gray-600 text-gray-300 hover:bg-gray-500'}"
+					>
+						{#if hasLogo}
+							<Check class="w-4 h-4" />
+							Replace
+						{:else}
+							<Upload class="w-4 h-4" />
+							Add
+						{/if}
+					</button>
 				</div>
 			{/each}
 		</div>
@@ -380,31 +374,47 @@
 			<Code class="w-5 h-5 text-purple-400" />
 			Tech Stack
 		</h3>
-		<p class="text-gray-400 text-sm mb-6">
-			Click an item to upload its logo. Items with a green dot already have logos.
-		</p>
 
-		<div class="space-y-4">
+		<div class="space-y-6">
 			{#each techStackCategories as category}
-				<div class="border-b border-gray-700 pb-4 last:border-0 last:pb-0">
-					<h4 class="text-sm font-medium text-gray-300 mb-2">{category.category}</h4>
-					<div class="flex flex-wrap gap-2">
+				<div>
+					<h4 class="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wide">{category.category}</h4>
+					<div class="space-y-2">
 						{#each category.items as item}
 							{@const hasLogo = existingLogoNames.has(item.name)}
-							<button
-								type="button"
-								onclick={() => selectItem('techstack', item.name)}
-								class="relative px-3 py-1.5 text-sm rounded-lg transition-colors {selectedItem?.name === item.name
-									? 'bg-purple-600 text-white'
-									: hasLogo
-										? 'bg-gray-600 text-gray-200 hover:bg-gray-500'
-										: 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200'}"
-							>
-								{#if hasLogo}
-									<span class="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-								{/if}
-								{item.display}
-							</button>
+							{@const logoUrl = getLogoUrl(item.name)}
+							<div class="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+								<!-- Logo display area -->
+								<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg overflow-hidden">
+									{#if logoUrl}
+										<img src={logoUrl} alt={item.display} class="max-w-full max-h-full object-contain" />
+									{:else}
+										<div class="w-6 h-6 bg-gray-600 rounded"></div>
+									{/if}
+								</div>
+
+								<!-- Item name -->
+								<div class="flex-1 min-w-0">
+									<div class="font-medium text-white">{item.display}</div>
+								</div>
+
+								<!-- Upload button -->
+								<button
+									type="button"
+									onclick={() => selectItem('techstack', item.name, item.display)}
+									class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors {hasLogo
+										? 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
+										: 'bg-gray-600 text-gray-300 hover:bg-gray-500'}"
+								>
+									{#if hasLogo}
+										<Check class="w-4 h-4" />
+										Replace
+									{:else}
+										<Upload class="w-4 h-4" />
+										Add
+									{/if}
+								</button>
+							</div>
 						{/each}
 					</div>
 				</div>
@@ -412,19 +422,21 @@
 		</div>
 	</section>
 
-	<!-- Existing Logos Section -->
+	<!-- Existing Logos Section (for reference/deletion) -->
 	<section class="bg-gray-800 rounded-lg p-6">
 		<h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
 			<Layers class="w-5 h-5 text-purple-400" />
-			Existing Logos
+			All Uploaded Logos ({data.logos?.length ?? 0})
 		</h3>
 
 		{#if data.logos && data.logos.length > 0}
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
 				{#each data.logos as logo}
 					<div class="bg-gray-700 rounded-lg p-4 flex flex-col items-center gap-2 group relative">
-						<img src={logo.url} alt={logo.name} class="w-12 h-12 object-contain" />
-						<span class="text-sm text-gray-300 truncate max-w-full">{logo.name}</span>
+						<div class="w-12 h-12 flex items-center justify-center">
+							<img src={logo.url} alt={logo.name} class="max-w-full max-h-full object-contain" />
+						</div>
+						<span class="text-xs text-gray-300 truncate max-w-full">{logo.name}</span>
 						<span
 							class="text-xs px-2 py-0.5 rounded {logo.type === 'infra'
 								? 'bg-blue-900 text-blue-300'
@@ -449,7 +461,7 @@
 			<div class="text-center py-8 text-gray-500">
 				<Image class="w-12 h-12 mx-auto mb-3 opacity-50" />
 				<p>No logos uploaded yet</p>
-				<p class="text-sm">Click items above to upload logos</p>
+				<p class="text-sm">Click "Add" buttons above to upload logos</p>
 			</div>
 		{/if}
 	</section>
