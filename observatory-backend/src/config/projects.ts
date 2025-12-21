@@ -18,6 +18,9 @@ export interface ServiceConfig {
   provider: 'cloudflare' | 'flyio' | 'supabase' | 'github' | 'sentry' | 'aws';
   serviceName: string;
   checkUrl?: string;
+  // Provider-specific identifiers
+  cfProjectName?: string;  // Cloudflare Pages project name if different from project.name
+  flyAppName?: string;     // Fly.io app name if different from project.name
 }
 
 // Projects to monitor - matches ci-monitor/src/lib/config/repos.ts

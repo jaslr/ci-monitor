@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import type { WorkflowStatus, RepoStatus, DeploymentStatus } from '$lib/github';
 	import type { InfraService, TechStack } from '$lib/types/infrastructure';
+	import type { StatusEvent } from '$lib/services/sse-client';
 	import { getProjectInfrastructure } from '$lib/config/infrastructure';
 	import { browser } from '$app/environment';
 	import { sseClient, type SSEEvent, type DeploymentEvent } from '$lib/services/sse-client';
@@ -73,11 +74,16 @@
 
 		if (event.type === 'deployment' && event.project) {
 			const deployment = event.data as DeploymentEvent;
-			updateRepoStatus(event.project, deployment);
+			updateRepoStatusFromDeployment(event.project, deployment);
+		}
+
+		if (event.type === 'status' && event.project) {
+			const statusData = event.data as StatusEvent & { provider?: string };
+			updateRepoStatusFromHealth(event.project, statusData);
 		}
 	}
 
-	function updateRepoStatus(projectId: string, deployment: DeploymentEvent): void {
+	function updateRepoStatusFromDeployment(projectId: string, deployment: DeploymentEvent): void {
 		statuses = statuses.map((status) => {
 			// Match by repo name (project ID matches repo name in our config)
 			if (status.repo === projectId || status.repo.toLowerCase() === projectId.toLowerCase()) {
@@ -125,6 +131,54 @@
 					status: newStatus,
 					conclusion: deployment.status,
 					html_url: deployment.runUrl || status.html_url,
+					run_date: new Date().toISOString()
+				};
+			}
+			return status;
+		});
+	}
+
+	// Handle status events from backend (Fly.io/Cloudflare health checks)
+	function updateRepoStatusFromHealth(projectId: string, healthData: StatusEvent & { provider?: string }): void {
+		statuses = statuses.map((status) => {
+			if (status.repo === projectId || status.repo.toLowerCase() === projectId.toLowerCase()) {
+				// Map health status to deployment status
+				let newDeployStatus: DeploymentStatus;
+				switch (healthData.status) {
+					case 'healthy':
+						newDeployStatus = 'success';
+						break;
+					case 'down':
+						newDeployStatus = 'failure';
+						break;
+					case 'degraded':
+						newDeployStatus = 'deploying'; // Show as "in progress"
+						break;
+					default:
+						newDeployStatus = 'unknown';
+				}
+
+				// Map to legacy workflow status
+				let newStatus: WorkflowStatus;
+				switch (healthData.status) {
+					case 'healthy':
+						newStatus = 'success';
+						break;
+					case 'down':
+						newStatus = 'failure';
+						break;
+					case 'degraded':
+						newStatus = 'in_progress';
+						break;
+					default:
+						newStatus = 'unknown';
+				}
+
+				return {
+					...status,
+					deployStatus: newDeployStatus,
+					deployedAt: new Date().toISOString(),
+					status: newStatus,
 					run_date: new Date().toISOString()
 				};
 			}

@@ -9,19 +9,26 @@ export async function pollCloudflarePages() {
     console.log('Polling Cloudflare Pages...');
     const cfProjects = await fetchPagesProjects();
     if (cfProjects.length === 0) {
+        console.log('No Cloudflare Pages projects found - check API token permissions');
         return;
     }
+    // Log available CF projects for debugging
+    console.log(`Found ${cfProjects.length} Cloudflare Pages projects: ${cfProjects.map(p => p.name).join(', ')}`);
     // Find our projects that use Cloudflare
     const cloudflareProjects = projects.filter((p) => p.services.some((s) => s.provider === 'cloudflare' && s.category === 'hosting'));
     for (const project of cloudflareProjects) {
         const cfService = project.services.find((s) => s.provider === 'cloudflare' && s.category === 'hosting');
         if (!cfService)
             continue;
-        // Match CF project by name
-        const cfProject = cfProjects.find((cf) => cf.name.toLowerCase() === project.name.toLowerCase() ||
-            cf.name.toLowerCase() === project.id.toLowerCase());
+        // Match CF project by name - check cfProjectName first, then fallback to project.name/id
+        const searchNames = [
+            cfService.cfProjectName,
+            project.name,
+            project.id,
+        ].filter(Boolean).map(n => n.toLowerCase());
+        const cfProject = cfProjects.find((cf) => searchNames.includes(cf.name.toLowerCase()));
         if (!cfProject) {
-            console.log(`No Cloudflare Pages project found for ${project.id}`);
+            console.log(`No Cloudflare Pages project found for ${project.id} (searched: ${searchNames.join(', ')})`);
             continue;
         }
         // Get latest deployment

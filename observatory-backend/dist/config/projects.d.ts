@@ -14,6 +14,8 @@ export interface ServiceConfig {
     provider: 'cloudflare' | 'flyio' | 'supabase' | 'github' | 'sentry' | 'aws';
     serviceName: string;
     checkUrl?: string;
+    cfProjectName?: string;
+    flyAppName?: string;
 }
 export declare const projects: ProjectConfig[];
 export declare function getProjectByRepo(repoName: string): ProjectConfig | undefined;
