@@ -214,13 +214,10 @@
 		}
 	];
 
-	// Get existing logo names for highlighting uploaded items
-	const existingLogoNames = $derived(new Set(data.logos?.map((l) => l.name.replace(/\.(svg|png)$/, '')) ?? []));
-
-	// Get logo URL for a provider/item
-	function getLogoUrl(name: string): string | null {
-		const logo = data.logos?.find((l) => l.name.replace(/\.(svg|png)$/, '') === name);
-		return logo?.url ?? null;
+	// Get logo data for a provider/item - returns both id (for deletion) and url
+	function getLogo(type: 'infra' | 'techstack', name: string) {
+		// Server returns name without extension, type matches directly
+		return data.logos?.find((l) => l.type === type && l.name === name) ?? null;
 	}
 </script>
 
@@ -228,6 +225,7 @@
 	<div>
 		<h2 class="text-xl font-semibold text-white">Media Library</h2>
 		<p class="text-gray-400 text-sm mt-1">Upload and manage logos for services and tech stack</p>
+		<p class="text-gray-500 text-xs mt-1">Loaded: {data.logos?.length ?? 0} logos from storage</p>
 	</div>
 
 	<!-- Success/Error Messages -->
@@ -327,13 +325,12 @@
 
 		<div class="space-y-3">
 			{#each infrastructureProviders as provider}
-				{@const hasLogo = existingLogoNames.has(provider.name)}
-				{@const logoUrl = getLogoUrl(provider.name)}
+				{@const logo = getLogo('infra', provider.name)}
 				<div class="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
 					<!-- Logo display area -->
 					<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg overflow-hidden">
-						{#if logoUrl}
-							<img src={logoUrl} alt={provider.displayName} class="max-w-full max-h-full object-contain" />
+						{#if logo}
+							<img src={logo.url} alt={provider.displayName} class="max-w-full max-h-full object-contain" />
 						{:else}
 							<div class="w-6 h-6 bg-gray-600 rounded"></div>
 						{/if}
@@ -347,22 +344,38 @@
 						</div>
 					</div>
 
-					<!-- Upload button -->
-					<button
-						type="button"
-						onclick={() => selectItem('infra', provider.name, provider.displayName)}
-						class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors {hasLogo
-							? 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
-							: 'bg-gray-600 text-gray-300 hover:bg-gray-500'}"
-					>
-						{#if hasLogo}
-							<Check class="w-4 h-4" />
-							Replace
-						{:else}
+					<!-- Action buttons -->
+					{#if logo}
+						<!-- Remove button when logo exists -->
+						<form
+							method="POST"
+							action="?/deleteLogo"
+							use:enhance={() => {
+								return async ({ update }) => {
+									await update();
+								};
+							}}
+						>
+							<input type="hidden" name="logoId" value={logo.id} />
+							<button
+								type="submit"
+								class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-red-900/50 text-red-300 hover:bg-red-800/50 transition-colors"
+							>
+								<Trash2 class="w-4 h-4" />
+								Remove
+							</button>
+						</form>
+					{:else}
+						<!-- Add button when no logo -->
+						<button
+							type="button"
+							onclick={() => selectItem('infra', provider.name, provider.displayName)}
+							class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
+						>
 							<Upload class="w-4 h-4" />
 							Add
-						{/if}
-					</button>
+						</button>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -381,13 +394,12 @@
 					<h4 class="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wide">{category.category}</h4>
 					<div class="space-y-2">
 						{#each category.items as item}
-							{@const hasLogo = existingLogoNames.has(item.name)}
-							{@const logoUrl = getLogoUrl(item.name)}
+							{@const logo = getLogo('techstack', item.name)}
 							<div class="flex items-center gap-4 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
 								<!-- Logo display area -->
 								<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-800 rounded-lg overflow-hidden">
-									{#if logoUrl}
-										<img src={logoUrl} alt={item.display} class="max-w-full max-h-full object-contain" />
+									{#if logo}
+										<img src={logo.url} alt={item.display} class="max-w-full max-h-full object-contain" />
 									{:else}
 										<div class="w-6 h-6 bg-gray-600 rounded"></div>
 									{/if}
@@ -398,22 +410,38 @@
 									<div class="font-medium text-white">{item.display}</div>
 								</div>
 
-								<!-- Upload button -->
-								<button
-									type="button"
-									onclick={() => selectItem('techstack', item.name, item.display)}
-									class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors {hasLogo
-										? 'bg-green-900/50 text-green-300 hover:bg-green-800/50'
-										: 'bg-gray-600 text-gray-300 hover:bg-gray-500'}"
-								>
-									{#if hasLogo}
-										<Check class="w-4 h-4" />
-										Replace
-									{:else}
+								<!-- Action buttons -->
+								{#if logo}
+									<!-- Remove button when logo exists -->
+									<form
+										method="POST"
+										action="?/deleteLogo"
+										use:enhance={() => {
+											return async ({ update }) => {
+												await update();
+											};
+										}}
+									>
+										<input type="hidden" name="logoId" value={logo.id} />
+										<button
+											type="submit"
+											class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-red-900/50 text-red-300 hover:bg-red-800/50 transition-colors"
+										>
+											<Trash2 class="w-4 h-4" />
+											Remove
+										</button>
+									</form>
+								{:else}
+									<!-- Add button when no logo -->
+									<button
+										type="button"
+										onclick={() => selectItem('techstack', item.name, item.display)}
+										class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
+									>
 										<Upload class="w-4 h-4" />
 										Add
-									{/if}
-								</button>
+									</button>
+								{/if}
 							</div>
 						{/each}
 					</div>
@@ -422,14 +450,14 @@
 		</div>
 	</section>
 
-	<!-- Existing Logos Section (for reference/deletion) -->
-	<section class="bg-gray-800 rounded-lg p-6">
-		<h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-			<Layers class="w-5 h-5 text-purple-400" />
-			All Uploaded Logos ({data.logos?.length ?? 0})
-		</h3>
+	<!-- Debug: All Uploaded Logos -->
+	{#if data.logos && data.logos.length > 0}
+		<section class="bg-gray-800 rounded-lg p-6">
+			<h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+				<Layers class="w-5 h-5 text-purple-400" />
+				All Uploaded Logos ({data.logos.length})
+			</h3>
 
-		{#if data.logos && data.logos.length > 0}
 			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
 				{#each data.logos as logo}
 					<div class="bg-gray-700 rounded-lg p-4 flex flex-col items-center gap-2 group relative">
@@ -457,12 +485,6 @@
 					</div>
 				{/each}
 			</div>
-		{:else}
-			<div class="text-center py-8 text-gray-500">
-				<Image class="w-12 h-12 mx-auto mb-3 opacity-50" />
-				<p>No logos uploaded yet</p>
-				<p class="text-sm">Click "Add" buttons above to upload logos</p>
-			</div>
-		{/if}
-	</section>
+		</section>
+	{/if}
 </div>
