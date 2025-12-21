@@ -414,9 +414,12 @@
 	<!-- Header -->
 	<header class="shrink-0 px-4 py-3 border-b border-gray-800">
 		<div class="flex items-center justify-between">
-			<div>
-				<h1 class="text-lg font-semibold text-gray-100">Infrastructure Observatory</h1>
-				<p class="text-xs text-gray-500">Last updated: {formatTime(lastUpdated)}</p>
+			<div class="flex items-center gap-3">
+				<img src="/logo.svg" alt="Orchon logo" class="w-8 h-8 text-gray-200" />
+				<div>
+					<h1 class="text-lg font-semibold text-gray-100" style="font-family: 'Roboto', sans-serif;">Orchon</h1>
+					<p class="text-xs text-gray-500">Last updated: {formatTime(lastUpdated)}</p>
+				</div>
 			</div>
 			<!-- Right side: SSE status + Settings -->
 			<div class="flex items-center gap-4">
