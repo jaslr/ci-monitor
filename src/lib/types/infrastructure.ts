@@ -216,7 +216,7 @@ export interface DnsRecord {
 
 export interface InfraNode {
   id: string;
-  type: 'user' | 'cdn' | 'dns' | 'site' | 'hosting' | 'api' | 'database' | 'storage' | 'auth' | 'external' | 'ci' | 'monitoring';
+  type: 'user' | 'cdn' | 'dns' | 'site' | 'hosting' | 'api' | 'database' | 'storage' | 'auth' | 'external' | 'ci' | 'monitoring' | 'localdev';
   label: string;
   provider?: string;
   icon?: string;                  // Lucide icon name

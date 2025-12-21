@@ -29,6 +29,30 @@
 	let panY = $state(0);
 	let containerEl: HTMLDivElement | null = $state(null);
 
+	// Logo display state - persisted to localStorage
+	const SHOW_LOGOS_KEY = 'infra-diagram-show-logos';
+	let showLogos = $state(true);
+	let isClient = $state(false);
+
+	// Initialize showLogos from localStorage on mount
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			isClient = true;
+			const stored = localStorage.getItem(SHOW_LOGOS_KEY);
+			if (stored !== null) {
+				showLogos = stored === 'true';
+			}
+		}
+	});
+
+	// Persist showLogos changes to localStorage
+	function toggleShowLogos() {
+		showLogos = !showLogos;
+		if (typeof window !== 'undefined') {
+			localStorage.setItem(SHOW_LOGOS_KEY, String(showLogos));
+		}
+	}
+
 	// Drag state
 	let isDragging = $state(false);
 	let dragStartX = $state(0);
@@ -119,6 +143,17 @@
 		netlify: 'Netlify',
 		google: 'Google'
 	};
+
+	// Get logo URL for a provider (returns null if provider doesn't have a logo)
+	function getLogoUrl(provider: string | undefined): string | null {
+		if (!provider) return null;
+		// These providers have logos in our R2 bucket
+		const providersWithLogos = ['cloudflare', 'flyio', 'supabase', 'github', 'sentry', 'vercel', 'netlify', 'auth0', 'clerk', 'planetscale', 'plausible', 'posthog', 'resend'];
+		if (providersWithLogos.includes(provider)) {
+			return `/api/logos/infra/${provider}.svg`;
+		}
+		return null;
+	}
 
 	interface DiagramNode extends InfraNode {
 		dashboardUrl?: string;
@@ -411,8 +446,22 @@
 </script>
 
 <div class="relative w-full" bind:this={containerEl}>
-	<!-- Zoom Controls - outside diagram -->
-	<div class="absolute -top-6 right-0 flex items-center gap-1 z-20">
+	<!-- Controls - outside diagram -->
+	<div class="absolute -top-6 right-0 flex items-center gap-3 z-20">
+		<!-- Logo Toggle -->
+		<button
+			onclick={toggleShowLogos}
+			class="flex items-center gap-1 px-1.5 py-0.5 hover:bg-gray-700/50 rounded text-[10px] transition-colors {showLogos ? 'text-gray-200' : 'text-gray-500'}"
+			title={showLogos ? 'Hide logos' : 'Show logos'}
+		>
+			<span class="w-5 h-2.5 rounded-full relative {showLogos ? 'bg-green-600' : 'bg-gray-600'} transition-colors">
+				<span class="absolute top-0.5 {showLogos ? 'right-0.5' : 'left-0.5'} w-1.5 h-1.5 rounded-full bg-white transition-all"></span>
+			</span>
+			<span>Logos</span>
+		</button>
+
+		<!-- Zoom Controls -->
+		<div class="flex items-center gap-1">
 		<button
 			onclick={zoomOut}
 			class="p-0.5 hover:bg-gray-700/50 rounded text-gray-400 hover:text-gray-200 transition-colors"
@@ -441,6 +490,7 @@
 		>
 			<Maximize2 class="w-3 h-3" />
 		</button>
+		</div>
 	</div>
 
 	<!-- Diagram Canvas -->
@@ -517,6 +567,7 @@
 				{@const nodeX = node.x ?? 0}
 				{@const nodeY = node.y ?? 0}
 				{@const isClickable = !!node.dashboardUrl}
+				{@const logoUrl = getLogoUrl(node.provider)}
 				<g
 					transform="translate({nodeX}, {nodeY})"
 					class={isClickable ? 'cursor-pointer' : ''}
@@ -536,12 +587,23 @@
 						class="transition-all {isClickable ? 'hover:stroke-[1.5] hover:fill-gray-800' : ''}"
 					/>
 
-					<!-- Icon -->
-					<foreignObject x="-7" y="-7" width="14" height="14">
-						<div class="flex items-center justify-center w-full h-full" style="color: {color}">
-							<IconComponent class="w-2.5 h-2.5" />
-						</div>
-					</foreignObject>
+					<!-- Icon or Logo -->
+					{#if showLogos && logoUrl}
+						<image
+							x="-8"
+							y="-8"
+							width="16"
+							height="16"
+							href={logoUrl}
+							preserveAspectRatio="xMidYMid meet"
+						/>
+					{:else}
+						<foreignObject x="-7" y="-7" width="14" height="14">
+							<div class="flex items-center justify-center w-full h-full" style="color: {color}">
+								<IconComponent class="w-2.5 h-2.5" />
+							</div>
+						</foreignObject>
+					{/if}
 
 					<!-- Labels -->
 					<text x="0" y="18" text-anchor="middle" class="text-[4px] fill-gray-400 font-medium">
