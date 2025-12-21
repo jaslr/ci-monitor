@@ -8,7 +8,8 @@ export const repos: Record<string, string[]> = {
 		'shippywhippy',
 		'loadmanagement',
 		'Ladderbox',
-		'littlelistoflights'
+		'littlelistoflights',
+		'workwithchip'
 	],
 	'jvp-ux': [
 		'vastpuddle.com.au',
