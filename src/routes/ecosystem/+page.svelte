@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getProvidersByCategory, getAllProjects } from '$lib/config/infrastructure';
-	import { page } from '$app/state';
 	import {
 		Cloud,
 		Database,

@@ -82,6 +82,38 @@
         "reveal": "always",
         "panel": "dedicated"
       }
+    },
+    {
+      "label": "Logs: Cloudflare Pages (Prod)",
+      "type": "shell",
+      "command": "DEPLOYMENT=$(npx wrangler pages deployment list --project-name=ci-monitor 2>/dev/null | awk '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/{gsub(/[^0-9a-f-]/, \" \"); print $1; exit}') && echo \"Tailing deployment: $DEPLOYMENT\" && npx wrangler pages deployment tail $DEPLOYMENT --project-name=ci-monitor",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Tailing",
+          "endsPattern": "Successfully"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "logs"
+      }
+    },
+    {
+      "label": "Logs: List Deployments",
+      "type": "shell",
+      "command": "npx wrangler pages deployment list --project-name=ci-monitor",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }
