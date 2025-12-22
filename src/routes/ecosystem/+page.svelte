@@ -15,7 +15,8 @@
 		Network,
 		Settings,
 		ExternalLink,
-		FolderGit2
+		FolderGit2,
+		ArrowDownAZ
 	} from '@lucide/svelte';
 	import EcosystemFlowDiagram from '$lib/components/EcosystemFlowDiagram.svelte';
 
@@ -147,20 +148,40 @@
 						</div>
 					</a>
 				{/each}
+
+				<!-- Filter options (styled as menu items) -->
+				<a
+					href="/"
+					class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent"
+				>
+					<ArrowDownAZ class="w-4 h-4 text-gray-500 shrink-0" />
+					<div class="flex-1 min-w-0">
+						<div class="font-medium text-sm text-gray-300 truncate">Sort A-Z</div>
+					</div>
+				</a>
+				<a
+					href="/"
+					class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent"
+				>
+					<FolderGit2 class="w-4 h-4 text-gray-500 shrink-0" />
+					<div class="flex-1 min-w-0">
+						<div class="font-medium text-sm text-gray-300 truncate">Show Projects</div>
+					</div>
+				</a>
 			</div>
 
-			<!-- ECOSYSTEM Section (current page indicator) -->
-			<div class="shrink-0 border-t border-gray-800">
-				<div class="px-4 py-2">
-					<span class="text-[10px] text-gray-600 uppercase tracking-wider font-medium">Ecosystem</span>
-				</div>
-				<div class="flex items-center gap-3 px-4 py-3 bg-gray-800 border-l-2 border-blue-500">
-					<Network class="w-4 h-4 text-blue-400" />
+			<!-- Ecosystem (sibling to Projects) -->
+			<div class="shrink-0 border-t border-gray-800 py-1">
+				<a
+					href="/ecosystem"
+					class="flex items-center gap-3 px-4 py-2.5 bg-gray-800 border-l-2 border-blue-500"
+				>
+					<Network class="w-4 h-4 text-blue-400 shrink-0" />
 					<div class="flex-1 min-w-0">
-						<div class="font-medium text-sm text-white">Ecosystem</div>
-						<div class="text-xs text-gray-500">Provider dependencies</div>
+						<div class="font-medium text-sm text-white truncate">Ecosystem</div>
+						<div class="text-xs text-gray-500 truncate">Provider dependencies</div>
 					</div>
-				</div>
+				</a>
 			</div>
 		</aside>
 
