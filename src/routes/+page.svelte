@@ -500,35 +500,20 @@
 	<div class="flex-1 flex flex-col lg:flex-row min-h-0">
 		<!-- Left Sidebar - Repo List (hidden on small, shown on lg+) -->
 		<aside class="hidden lg:flex lg:flex-col w-[20rem] shrink-0 border-r border-gray-800 bg-gray-900">
-			<!-- Top-level navigation items -->
-			<div class="shrink-0">
-				<!-- Projects (collapsible) -->
-				<button
-					onclick={() => projectsExpanded = !projectsExpanded}
-					class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors bg-gray-800 border-l-2 border-blue-500 cursor-pointer"
-				>
-					{#if projectsExpanded}
-						<ChevronDown class="w-4 h-4 text-blue-400 shrink-0" />
-					{:else}
-						<ChevronRight class="w-4 h-4 text-blue-400 shrink-0" />
-					{/if}
-					<div class="flex-1 min-w-0">
-						<div class="font-medium text-sm text-white truncate">Projects</div>
-					</div>
-				</button>
-
-				<!-- Ecosystem (sibling to Projects) -->
-				<a
-					href="/ecosystem"
-					class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent"
-				>
-					<Network class="w-4 h-4 text-gray-500 shrink-0" />
-					<div class="flex-1 min-w-0">
-						<div class="font-medium text-sm text-gray-300 truncate">Ecosystem</div>
-						<div class="text-xs text-gray-500 truncate">Provider dependencies</div>
-					</div>
-				</a>
-			</div>
+			<!-- Projects (collapsible header) -->
+			<button
+				onclick={() => projectsExpanded = !projectsExpanded}
+				class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors bg-gray-800 border-l-2 border-blue-500 cursor-pointer shrink-0"
+			>
+				{#if projectsExpanded}
+					<ChevronDown class="w-4 h-4 text-blue-400 shrink-0" />
+				{:else}
+					<ChevronRight class="w-4 h-4 text-blue-400 shrink-0" />
+				{/if}
+				<div class="flex-1 min-w-0">
+					<div class="font-medium text-sm text-white truncate">Projects</div>
+				</div>
+			</button>
 
 			<!-- Projects content (collapsible) -->
 			{#if projectsExpanded}
@@ -666,6 +651,18 @@
 					{/each}
 				</div>
 			{/if}
+
+			<!-- Ecosystem (at bottom of project list) -->
+			<a
+				href="/ecosystem"
+				class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent shrink-0"
+			>
+				<Network class="w-4 h-4 text-gray-500 shrink-0" />
+				<div class="flex-1 min-w-0">
+					<div class="font-medium text-sm text-gray-300 truncate">Ecosystem</div>
+					<div class="text-xs text-gray-500 truncate">Provider dependencies</div>
+				</div>
+			</a>
 			{/if}
 		</aside>
 

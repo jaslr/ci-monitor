@@ -125,33 +125,30 @@
 
 	<!-- Main Content with Sidebar -->
 	<div class="flex-1 flex flex-col lg:flex-row min-h-0">
-		<!-- Left Sidebar - Project List -->
+		<!-- Left Sidebar -->
 		<aside class="hidden lg:flex lg:flex-col w-[20rem] shrink-0 border-r border-gray-800 bg-gray-900">
-			<!-- Top-level navigation items -->
-			<div class="shrink-0">
-				<!-- Projects (collapsed, links to main page) -->
-				<a
-					href="/"
-					class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent"
-				>
-					<ChevronRight class="w-4 h-4 text-gray-500 shrink-0" />
-					<div class="flex-1 min-w-0">
-						<div class="font-medium text-sm text-gray-300 truncate">Projects</div>
-					</div>
-				</a>
+			<!-- Projects (collapsed, links to main page) -->
+			<a
+				href="/"
+				class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-800/50 border-l-2 border-transparent shrink-0"
+			>
+				<ChevronRight class="w-4 h-4 text-gray-500 shrink-0" />
+				<div class="flex-1 min-w-0">
+					<div class="font-medium text-sm text-gray-300 truncate">Projects</div>
+				</div>
+			</a>
 
-				<!-- Ecosystem (active) -->
-				<a
-					href="/ecosystem"
-					class="flex items-center gap-3 px-4 py-2.5 bg-gray-800 border-l-2 border-blue-500"
-				>
-					<Network class="w-4 h-4 text-blue-400 shrink-0" />
-					<div class="flex-1 min-w-0">
-						<div class="font-medium text-sm text-white truncate">Ecosystem</div>
-						<div class="text-xs text-gray-500 truncate">Provider dependencies</div>
-					</div>
-				</a>
-			</div>
+			<!-- Ecosystem (active) -->
+			<a
+				href="/ecosystem"
+				class="flex items-center gap-3 px-4 py-2.5 bg-gray-800 border-l-2 border-blue-500 shrink-0"
+			>
+				<Network class="w-4 h-4 text-blue-400 shrink-0" />
+				<div class="flex-1 min-w-0">
+					<div class="font-medium text-sm text-white truncate">Ecosystem</div>
+					<div class="text-xs text-gray-500 truncate">Provider dependencies</div>
+				</div>
+			</a>
 		</aside>
 
 		<!-- Main Content Area -->
