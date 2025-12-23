@@ -110,10 +110,11 @@ When asked to "get it live" for this project:
    ```bash
    git push
    ```
-6. **Deploy to Cloudflare Pages**:
+6. **Deploy to Cloudflare Pages (production)**:
    ```bash
-   npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor
+   npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor --branch=main
    ```
+   Production URL: https://ci-monitor.pages.dev
 
 ### Task Completion Protocol
 
@@ -137,11 +138,13 @@ Your Machine
 
 **Quick commands:**
 ```bash
-npm version patch --no-git-tag-version                                      # Bump version
-git add -A && git commit -m "v0.x.x: ..."                                   # Commit
-git push                                                                     # Push to GitHub
-npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor  # Deploy
+npm version patch --no-git-tag-version                                                            # Bump version
+git add -A && git commit -m "v0.x.x: ..."                                                         # Commit
+git push                                                                                           # Push to GitHub
+npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor --branch=main  # Deploy to production
 ```
+
+**Production URL:** https://ci-monitor.pages.dev
 
 **Why forked?**
 - Deploys directly via Wrangler - no GitHub Actions minutes consumed
