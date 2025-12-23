@@ -957,17 +957,30 @@
 											{/if}
 										</div>
 									</div>
-									{#if selectedStatus.html_url}
-										<a
-											href={selectedStatus.html_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="px-3 py-1.5 bg-red-800 hover:bg-red-700 rounded text-sm text-red-100 transition-colors flex items-center gap-2 shrink-0"
-										>
-											View Logs
-											<ExternalLink class="w-3 h-3" />
-										</a>
-									{/if}
+									<div class="flex items-center gap-2 shrink-0">
+										{#if selectedStatus.html_url}
+											<a
+												href={selectedStatus.html_url}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="px-3 py-1.5 bg-red-800 hover:bg-red-700 rounded text-sm text-red-100 transition-colors flex items-center gap-2"
+											>
+												View Logs
+												<ExternalLink class="w-3 h-3" />
+											</a>
+										{/if}
+										{#if selectedInfra?.productionUrl}
+											<a
+												href={selectedInfra.productionUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-100 transition-colors flex items-center gap-2"
+											>
+												View Site
+												<ExternalLink class="w-3 h-3" />
+											</a>
+										{/if}
+									</div>
 								</div>
 							{:else if selectedStatus.deployStatus === 'deploying'}
 								<div class="flex items-center gap-3 mb-4 p-3 bg-cyan-900/30 border border-cyan-800 rounded">
@@ -978,17 +991,30 @@
 										<div class="text-cyan-400 font-medium">Deploying...</div>
 										<div class="text-sm text-cyan-300/70">{selectedStatus.workflow_name || 'Deployment in progress'}</div>
 									</div>
-									{#if selectedStatus.html_url}
-										<a
-											href={selectedStatus.html_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="px-3 py-1.5 bg-cyan-800 hover:bg-cyan-700 rounded text-sm text-cyan-100 transition-colors flex items-center gap-2 shrink-0"
-										>
-											View Progress
-											<ExternalLink class="w-3 h-3" />
-										</a>
-									{/if}
+									<div class="flex items-center gap-2 shrink-0">
+										{#if selectedStatus.html_url}
+											<a
+												href={selectedStatus.html_url}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="px-3 py-1.5 bg-cyan-800 hover:bg-cyan-700 rounded text-sm text-cyan-100 transition-colors flex items-center gap-2"
+											>
+												View Progress
+												<ExternalLink class="w-3 h-3" />
+											</a>
+										{/if}
+										{#if selectedInfra?.productionUrl}
+											<a
+												href={selectedInfra.productionUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-100 transition-colors flex items-center gap-2"
+											>
+												View Site
+												<ExternalLink class="w-3 h-3" />
+											</a>
+										{/if}
+									</div>
 								</div>
 							{:else if selectedStatus.deployStatus === 'success'}
 								<div class="flex items-center gap-3 mb-4 p-3 bg-green-900/30 border border-green-800 rounded">
@@ -1001,6 +1027,17 @@
 										<div class="text-green-400 font-medium">Deployed Successfully</div>
 										<div class="text-sm text-green-300/70">{selectedStatus.workflow_name || 'Last deployment succeeded'}</div>
 									</div>
+									{#if selectedInfra?.productionUrl}
+										<a
+											href={selectedInfra.productionUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="px-3 py-1.5 bg-green-800 hover:bg-green-700 rounded text-sm text-green-100 transition-colors flex items-center gap-2 shrink-0"
+										>
+											View Site
+											<ExternalLink class="w-3 h-3" />
+										</a>
+									{/if}
 								</div>
 							{/if}
 

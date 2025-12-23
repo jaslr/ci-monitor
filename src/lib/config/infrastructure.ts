@@ -18,6 +18,7 @@ export const INFRASTRUCTURE: Record<string, {
   repoOwner: string;
   localPath?: string;
   logCommands?: LogCommand[];
+  productionUrl?: string;  // Live production site URL for evidence
 }> = {
   // ==========================================================================
   // CI-MONITOR - This application (monitors itself!)
@@ -27,6 +28,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/ci-monitor',
+    productionUrl: 'https://ci-monitor.pages.dev',
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/ci-monitor' },
       { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/ci-monitor/actions' },
@@ -55,6 +57,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/livna',
+    productionUrl: 'https://livna.pages.dev',
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/livna' },
       { category: 'database', provider: 'supabase', serviceName: 'Supabase Database', status: 'unknown', config: {}, discoveryMethod: 'package_json', dashboardUrl: 'https://supabase.com/dashboard/project/vtyfsrpupgrkkbnsiuqe' },
@@ -92,6 +95,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/brontiq',
+    productionUrl: 'https://brontiq.fly.dev',
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/brontiq' },
       { category: 'database', provider: 'flyio', serviceName: 'Fly.io PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/brontiq-pocketbase' },
@@ -122,6 +126,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/blaterbox/ladderbox',
+    productionUrl: 'https://ladderbox.fly.dev',
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/ladderbox' },
       { category: 'database', provider: 'flyio', serviceName: 'Fly.io PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/ladderbox-pocketbase' },
@@ -153,6 +158,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/shippywhippy',
+    productionUrl: 'https://shippywhippy.fly.dev',
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/shippywhippy' },
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages (Admin)', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/shippywhippy-admin' },
@@ -184,6 +190,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/loadmanagement',
+    productionUrl: 'https://blatblat.fly.dev',
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/blatblat' },
       { category: 'database', provider: 'pocketbase', serviceName: 'PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file' },
@@ -213,6 +220,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jaslr',
     repoOwner: 'jaslr',
     localPath: '/home/chip/littlelistoflights',
+    productionUrl: 'https://littlelistoflights.pages.dev',
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/littlelistoflights' },
       { category: 'database', provider: 'supabase', serviceName: 'Supabase Database', status: 'unknown', config: {}, discoveryMethod: 'package_json', dashboardUrl: 'https://supabase.com/dashboard/project/hjrawccyhnvtwulzfbbo' },
@@ -243,6 +251,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     localPath: '/home/chip/vastpuddle/vastpuddle.com.au',
+    productionUrl: 'https://vastpuddle.com.au',
     services: [
       { category: 'hosting', provider: 'github', serviceName: 'GitHub Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jvp-ux/vastpuddle.com.au/deployments' },
       { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jvp-ux/vastpuddle.com.au/actions' },
@@ -266,6 +275,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     localPath: '/home/chip/vastpuddle/junipa.com.au',
+    productionUrl: 'https://junipa.com.au',
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/junipa-com-au' },
       { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jvp-ux/junipa.com.au/actions' },
@@ -289,6 +299,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     localPath: '/home/chip/vastpuddle/junipa-organisations',
+    productionUrl: 'https://junipa-organisations.web.app',
     services: [
       { category: 'hosting', provider: 'firebase', serviceName: 'Firebase Hosting', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.firebase.google.com/project/junipa-organisations/hosting' },
       { category: 'hosting', provider: 'gcp', serviceName: 'Cloud Run (API)', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/run?project=junipa-organisations' },
@@ -316,6 +327,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa Support',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://support.junipa.com.au',
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/support-junipa-com-au' },
       { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jvp-ux/support.junipa.com.au/actions' },
@@ -338,6 +350,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     localPath: '/home/chip/vastpuddle/junipa',
+    productionUrl: 'https://junipa.web.app',
     services: [
       { category: 'hosting', provider: 'firebase', serviceName: 'Firebase Hosting', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.firebase.google.com/project/junipa/hosting' },
       { category: 'hosting', provider: 'gcp', serviceName: 'Cloud Run (API)', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/run?project=junipa' },
@@ -373,6 +386,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa Demo',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://junipa.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa' },
@@ -395,6 +409,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa - Cedar College',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://cedarcollege-prod.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=cedarcollege-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=cedarcollege-prod' },
@@ -417,6 +432,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa - Men of Business',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://menofbusiness-prod.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=menofbusiness-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=menofbusiness-prod' },
@@ -439,6 +455,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa - MJC',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://mjc-prod-2022b.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=mjc-prod-2022b' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=mjc-prod-2022b' },
@@ -461,6 +478,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa - Tuncurry',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://mjc-tuncurry-prod.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=mjc-tuncurry-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=mjc-tuncurry-prod' },
@@ -483,6 +501,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa Central Demo',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://junipa-central-demo.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa-central-demo' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa-central-demo' },
@@ -505,6 +524,7 @@ export const INFRASTRUCTURE: Record<string, {
     displayName: 'Junipa West Demo',
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
+    productionUrl: 'https://junipa-west-demo.appspot.com',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa-west-demo' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa-west-demo' },
@@ -535,6 +555,7 @@ export function getProjectInfrastructure(repoName: string): {
   services: InfraService[];
   stack: TechStack;
   logCommands?: LogCommand[];
+  productionUrl?: string;
 } | null {
   const infra = INFRASTRUCTURE[repoName];
   if (!infra) return null;
@@ -546,6 +567,7 @@ export function getProjectInfrastructure(repoName: string): {
     identity: infra.identity,
     repoOwner: infra.repoOwner,
     localPath: infra.localPath,
+    productionUrl: infra.productionUrl,
     services: infra.services.map((s, i) => ({
       ...s,
       id: `${repoName}-${s.provider}-${s.category}-${i}`,
