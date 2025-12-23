@@ -18,11 +18,11 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+<div class="min-h-screen bg-gray-900 flex items-start justify-center p-4 pt-16">
 	<div class="w-full max-w-sm">
 		<!-- Logo -->
-		<div class="flex justify-center mb-8">
-			<img src="/logo.svg" alt="Orchon" class="w-20 h-20" />
+		<div class="flex justify-center mb-10">
+			<img src="/logo.svg" alt="Orchon" class="w-32 h-32" />
 		</div>
 
 		<form
@@ -42,10 +42,10 @@
 					isLoading = false;
 				};
 			}}
-			class="bg-gray-800 rounded-lg p-6 shadow-xl"
+			class="bg-gray-800 p-6 shadow-xl"
 		>
 			{#if form?.error}
-				<div class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded text-red-300 text-sm">
+				<div class="mb-4 p-3 bg-red-900/50 border border-red-700 text-red-300 text-sm">
 					{form.error}
 				</div>
 			{/if}
@@ -59,7 +59,7 @@
 					autocomplete="email"
 					inputmode="email"
 					value={savedUsername}
-					class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+					class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
 					placeholder="Email"
 				/>
 			</div>
@@ -72,7 +72,7 @@
 						id="password"
 						required
 						autocomplete="current-password"
-						class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12 text-base"
+						class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12 text-base"
 						placeholder="Password"
 					/>
 					<button
@@ -97,7 +97,7 @@
 					id="remember"
 					name="remember"
 					bind:checked={rememberMe}
-					class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
+					class="w-4 h-4 border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
 				/>
 				<label for="remember" class="text-sm text-gray-400">Remember me</label>
 			</div>
@@ -105,7 +105,7 @@
 			<button
 				type="submit"
 				disabled={isLoading}
-				class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-base"
+				class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium transition-colors text-base"
 			>
 				{isLoading ? 'Signing in...' : 'Sign In'}
 			</button>
