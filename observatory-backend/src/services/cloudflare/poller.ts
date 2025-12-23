@@ -66,25 +66,58 @@ export async function pollCloudflarePages(): Promise<void> {
 
     // Store deployment if we have one
     if (deployment) {
+      const commitSha = deployment.deployment_trigger.metadata.commit_hash;
+      const deployStatus = deployment.latest_stage.status === 'success'
+        ? 'success'
+        : deployment.latest_stage.status === 'active'
+          ? 'in_progress'
+          : 'failure';
+      const deployStartedAt = deployment.latest_stage.started_on
+        ? new Date(deployment.latest_stage.started_on)
+        : undefined;
+      const deployCompletedAt = deployment.latest_stage.ended_on
+        ? new Date(deployment.latest_stage.ended_on)
+        : undefined;
+
+      // First, try to update existing deployment record by commit SHA
+      // This correlates the CF deploy with the CI run for the same commit
+      try {
+        const updated = await db.updateDeploymentByCommit(commitSha, {
+          deployStartedAt,
+          deployCompletedAt,
+          status: deployStatus,
+        });
+
+        if (updated) {
+          // Broadcast the correlated deployment with all timestamps
+          broadcast({
+            type: 'deployment',
+            project: project.id,
+            data: {
+              ...updated,
+              provider: 'cloudflare',
+              projectId: project.id,
+            },
+          });
+        }
+      } catch (err) {
+        // No existing record for this commit - create new CF-only deployment
+      }
+
+      // Also store as CF-specific deployment record
       try {
         await db.insertDeployment({
           id: `cf-${deployment.id}`,
           serviceId: cfService.id,
           provider: 'cloudflare',
-          status:
-            deployment.latest_stage.status === 'success'
-              ? 'success'
-              : deployment.latest_stage.status === 'active'
-                ? 'in_progress'
-                : 'failure',
-          commitSha: deployment.deployment_trigger.metadata.commit_hash,
+          status: deployStatus,
+          commitSha,
+          branch: deployment.deployment_trigger.metadata.branch,
           runUrl: deployment.url,
-          startedAt: deployment.latest_stage.started_on
-            ? new Date(deployment.latest_stage.started_on)
-            : undefined,
-          completedAt: deployment.latest_stage.ended_on
-            ? new Date(deployment.latest_stage.ended_on)
-            : undefined,
+          startedAt: deployStartedAt,
+          completedAt: deployCompletedAt,
+          deployStartedAt,
+          deployCompletedAt,
         });
       } catch (err) {
         // Might be a duplicate, that's OK

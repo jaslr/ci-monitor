@@ -30,7 +30,7 @@
 		Network,
 		FolderGit2
 	} from '@lucide/svelte';
-	import InfraFlowDiagram from '$lib/components/InfraFlowDiagram.svelte';
+	import InfraFlowDiagram, { type DeploymentTimestamps } from '$lib/components/InfraFlowDiagram.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -40,6 +40,9 @@
 	let sseConnected = $state(false);
 	let connectionInfo = $state(sseClient.connectionStatus);
 	let showConnectionDetails = $state(false);
+
+	// Track deployment timestamps per project (for infra flow diagram)
+	let deploymentTimestamps = $state<Record<string, DeploymentTimestamps>>({});
 
 	// Update local state when server data changes (navigation, etc.)
 	$effect(() => {
@@ -95,6 +98,18 @@
 	}
 
 	function updateRepoStatusFromDeployment(projectId: string, deployment: DeploymentEvent): void {
+		// Update deployment timestamps for this project
+		const currentTimestamps = deploymentTimestamps[projectId] || {};
+		deploymentTimestamps[projectId] = {
+			...currentTimestamps,
+			// Merge in new timestamps (only set if present, don't overwrite existing)
+			pushStarted: deployment.pushedAt || currentTimestamps.pushStarted,
+			ciStarted: deployment.ciStartedAt || currentTimestamps.ciStarted,
+			ciCompleted: deployment.ciCompletedAt || currentTimestamps.ciCompleted,
+			deployStarted: deployment.deployStartedAt || currentTimestamps.deployStarted,
+			deployCompleted: deployment.deployCompletedAt || currentTimestamps.deployCompleted,
+		};
+
 		statuses = statuses.map((status) => {
 			// Match by repo name (project ID matches repo name in our config)
 			if (status.repo === projectId || status.repo.toLowerCase() === projectId.toLowerCase()) {
@@ -291,10 +306,11 @@
 	};
 
 	// Deployment status colors (for Fly.io/Cloudflare deployment status)
+	// Note: 'deploying' uses a spinner component instead of this color
 	const deployStatusColors: Record<DeploymentStatus, string> = {
 		success: 'bg-green-500',
 		failure: 'bg-red-500',
-		deploying: 'bg-yellow-500 animate-pulse',
+		deploying: 'bg-transparent', // Spinner handles this
 		unknown: 'bg-gray-500'
 	};
 
@@ -600,8 +616,17 @@
 								? 'bg-gray-800 border-l-2 border-blue-500'
 								: 'hover:bg-gray-800/50 border-l-2 border-transparent'}"
 						>
-							<!-- Deployment Status Dot (Fly.io/Cloudflare) -->
-							<div class="w-2.5 h-2.5 rounded-full {deployStatusColors[status.deployStatus]} shrink-0" title="Deployment: {status.deployStatus}"></div>
+							<!-- Deployment Status Indicator (Fly.io/Cloudflare) -->
+							{#if status.deployStatus === 'deploying'}
+								<!-- White spinner during deployment -->
+								<div class="w-2.5 h-2.5 shrink-0 relative" title="Deploying...">
+									<svg class="w-2.5 h-2.5 animate-spin" viewBox="0 0 16 16">
+										<circle cx="8" cy="8" r="6" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="7" stroke-linecap="round" />
+									</svg>
+								</div>
+							{:else}
+								<div class="w-2.5 h-2.5 rounded-full {deployStatusColors[status.deployStatus]} shrink-0" title="Deployment: {status.deployStatus}"></div>
+							{/if}
 
 							<!-- Repo Info -->
 							<div class="flex-1 min-w-0">
@@ -737,8 +762,17 @@
 									? 'bg-gray-800'
 									: 'hover:bg-gray-800/50'}"
 							>
-								<!-- Deployment Status Dot (Fly.io/Cloudflare) -->
-								<div class="w-2.5 h-2.5 rounded-full {deployStatusColors[status.deployStatus]} shrink-0" title="Deployment: {status.deployStatus}"></div>
+								<!-- Deployment Status Indicator (Fly.io/Cloudflare) -->
+								{#if status.deployStatus === 'deploying'}
+									<!-- White spinner during deployment -->
+									<div class="w-2.5 h-2.5 shrink-0 relative" title="Deploying...">
+										<svg class="w-2.5 h-2.5 animate-spin" viewBox="0 0 16 16">
+											<circle cx="8" cy="8" r="6" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="7" stroke-linecap="round" />
+										</svg>
+									</div>
+								{:else}
+									<div class="w-2.5 h-2.5 rounded-full {deployStatusColors[status.deployStatus]} shrink-0" title="Deployment: {status.deployStatus}"></div>
+								{/if}
 
 								<!-- Repo Info -->
 								<div class="flex-1 min-w-0">
@@ -801,6 +835,8 @@
 											<InfraFlowDiagram
 												services={repoInfra.services}
 												projectName={repoInfra.displayName}
+												isDeploying={status.deployStatus === 'deploying'}
+												deploymentTimestamps={deploymentTimestamps[status.repo]}
 											/>
 										</div>
 									</div>
@@ -851,8 +887,16 @@
 					<div class="shrink-0 px-6 py-4 border-b border-gray-700 bg-gray-800">
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-3">
-								<!-- Deployment Status Dot -->
-								<div class="w-3 h-3 rounded-full {deployStatusColors[selectedStatus.deployStatus]}" title="Deployment: {selectedStatus.deployStatus}"></div>
+								<!-- Deployment Status Indicator -->
+								{#if selectedStatus.deployStatus === 'deploying'}
+									<div class="w-3 h-3 shrink-0 relative" title="Deploying...">
+										<svg class="w-3 h-3 animate-spin" viewBox="0 0 16 16">
+											<circle cx="8" cy="8" r="6" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="7" stroke-linecap="round" />
+										</svg>
+									</div>
+								{:else}
+									<div class="w-3 h-3 rounded-full {deployStatusColors[selectedStatus.deployStatus]}" title="Deployment: {selectedStatus.deployStatus}"></div>
+								{/if}
 								<div>
 									<h2 class="text-xl font-semibold text-white">{selectedInfra.displayName}</h2>
 									<p class="text-sm text-gray-400">{selectedStatus.owner}/{selectedStatus.repo}</p>
@@ -906,6 +950,8 @@
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}
+								isDeploying={selectedStatus.deployStatus === 'deploying'}
+								deploymentTimestamps={deploymentTimestamps[selectedStatus.repo]}
 							/>
 						</div>
 					</div>

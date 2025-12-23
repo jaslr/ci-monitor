@@ -15,6 +15,12 @@ export interface DeploymentEvent {
 	commitSha?: string;
 	branch?: string;
 	runUrl?: string;
+	// Granular phase timestamps (ISO 8601 strings)
+	pushedAt?: string;        // When git push was received
+	ciStartedAt?: string;     // When CI workflow started
+	ciCompletedAt?: string;   // When CI workflow completed
+	deployStartedAt?: string; // When deploy to hosting started
+	deployCompletedAt?: string; // When deploy is live
 }
 
 export interface StatusEvent {

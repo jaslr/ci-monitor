@@ -15,14 +15,25 @@
 		Maximize2
 	} from '@lucide/svelte';
 
+	// Deployment timestamps for each stage
+	export interface DeploymentTimestamps {
+		pushStarted?: string;    // When git push started
+		ciStarted?: string;      // When CI/deploy started
+		ciCompleted?: string;    // When CI/deploy finished
+		deployStarted?: string;  // When site deployment started
+		deployCompleted?: string; // When site is live
+	}
+
 	interface Props {
 		services: InfraService[];
 		projectName: string;
 		domain?: string;
 		animated?: boolean;
+		isDeploying?: boolean;  // True when actively deploying
+		deploymentTimestamps?: DeploymentTimestamps;
 	}
 
-	let { services, projectName, domain, animated = true }: Props = $props();
+	let { services, projectName, domain, animated = true, isDeploying = false, deploymentTimestamps }: Props = $props();
 
 	// Zoom and pan state
 	let panX = $state(0);
@@ -143,6 +154,33 @@
 		netlify: 'Netlify',
 		google: 'Google'
 	};
+
+	// Format timestamp to HH:MM:SS
+	function formatTimestamp(isoString: string | undefined): string {
+		if (!isoString) return '';
+		const date = new Date(isoString);
+		return date.toLocaleTimeString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hour12: false
+		});
+	}
+
+	// Get timestamp for a specific node based on deployment progress
+	function getNodeTimestamp(nodeId: string): string | undefined {
+		if (!deploymentTimestamps) return undefined;
+		switch (nodeId) {
+			case 'localdev':
+				return deploymentTimestamps.pushStarted;
+			case 'ci':
+				return deploymentTimestamps.ciStarted || deploymentTimestamps.ciCompleted;
+			case 'site':
+				return deploymentTimestamps.deployCompleted || deploymentTimestamps.deployStarted;
+			default:
+				return undefined;
+		}
+	}
 
 	// Get logo URL for a provider (returns null if provider doesn't have a logo)
 	function getLogoUrl(provider: string | undefined): string | null {
@@ -290,21 +328,26 @@
 		return nodes;
 	}
 
-	function buildEdges(nodes: DiagramNode[]): InfraEdge[] {
-		const edges: InfraEdge[] = [];
+	// Extended edge type for deployment edges
+	interface ExtendedEdge extends InfraEdge {
+		isDeployPipeline?: boolean;  // Part of the deploy flow (localdev→ci→site)
+	}
+
+	function buildEdges(nodes: DiagramNode[]): ExtendedEdge[] {
+		const edges: ExtendedEdge[] = [];
 		const nodeIds = new Set(nodes.map((n) => n.id));
 
-		// Local dev to CI (dotted line - push triggers deploy)
+		// Local dev to CI (deploy pipeline - animates during deployment)
 		if (nodeIds.has('localdev') && nodeIds.has('ci')) {
-			edges.push({ id: 'localdev-ci', source: 'localdev', target: 'ci', status: 'idle' });
+			edges.push({ id: 'localdev-ci', source: 'localdev', target: 'ci', status: 'idle', isDeployPipeline: true });
 		}
 
-		// CI to Site (deploy flow)
+		// CI to Site (deploy pipeline - animates during deployment)
 		if (nodeIds.has('ci')) {
-			edges.push({ id: 'ci-site', source: 'ci', target: 'site', status: 'idle' });
+			edges.push({ id: 'ci-site', source: 'ci', target: 'site', status: 'idle', isDeployPipeline: true });
 		}
 
-		// Site to backend services (active connections)
+		// Site to backend services (static green connections - shows data flow paths)
 		if (nodeIds.has('database')) {
 			edges.push({ id: 'site-database', source: 'site', target: 'database', status: 'active' });
 		}
@@ -315,7 +358,7 @@
 			edges.push({ id: 'site-storage', source: 'site', target: 'storage', status: 'active' });
 		}
 
-		// Site to monitoring
+		// Site to monitoring (static grey)
 		if (nodeIds.has('monitoring')) {
 			edges.push({ id: 'site-monitoring', source: 'site', target: 'monitoring', status: 'idle' });
 		}
@@ -510,24 +553,28 @@
 			style="aspect-ratio: {viewBox().width}/{viewBox().height}; transform: scale({scale}) translate({panX / scale}px, {panY / scale}px); transform-origin: center;"
 		>
 			<defs>
+				<!-- Green arrow for data flow (site→backend) -->
 				<marker id="arrow-active" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
 					<polygon points="0 0, 6 2.5, 0 5" fill="#22c55e" />
 				</marker>
+				<!-- Grey arrow for idle connections -->
 				<marker id="arrow-idle" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
 					<polygon points="0 0, 6 2.5, 0 5" fill="#4b5563" />
 				</marker>
+				<!-- Cyan arrow for active deployment (deploy pipeline) -->
+				<marker id="arrow-deploy" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+					<polygon points="0 0, 6 2.5, 0 5" fill="#06b6d4" />
+				</marker>
 
-				{#if animated}
-					<style>
-						@keyframes flowDash {
-							to { stroke-dashoffset: -12; }
-						}
-						.flow-animated {
-							stroke-dasharray: 4 4;
-							animation: flowDash 0.8s linear infinite;
-						}
-					</style>
-				{/if}
+				<style>
+					@keyframes deployDash {
+						to { stroke-dashoffset: -12; }
+					}
+					.deploy-animated {
+						stroke-dasharray: 4 4;
+						animation: deployDash 0.5s linear infinite;
+					}
+				</style>
 			</defs>
 
 			<!-- Edges -->
@@ -535,17 +582,19 @@
 				{@const source = getNodePosition(edge.source)}
 				{@const target = getNodePosition(edge.target)}
 				{@const path = getEdgePath(source, target)}
-				{@const isActive = edge.status === 'active'}
+				{@const isDataFlow = edge.status === 'active'}
+				{@const isDeployEdge = (edge as ExtendedEdge).isDeployPipeline}
+				{@const shouldAnimateDeploy = isDeploying && isDeployEdge}
 				<g>
 					<line
 						x1={path.x1}
 						y1={path.y1}
 						x2={path.x2}
 						y2={path.y2}
-						stroke={isActive ? '#22c55e' : '#4b5563'}
+						stroke={shouldAnimateDeploy ? '#06b6d4' : isDataFlow ? '#22c55e' : '#4b5563'}
 						stroke-width="0.75"
-						marker-end={isActive ? 'url(#arrow-active)' : 'url(#arrow-idle)'}
-						class={animated && isActive ? 'flow-animated' : ''}
+						marker-end={shouldAnimateDeploy ? 'url(#arrow-deploy)' : isDataFlow ? 'url(#arrow-active)' : 'url(#arrow-idle)'}
+						class={shouldAnimateDeploy ? 'deploy-animated' : ''}
 					/>
 					{#if edge.label}
 						<text
@@ -613,6 +662,16 @@
 						<text x="0" y="24" text-anchor="middle" class="text-[3.5px] fill-gray-500">
 							{node.label2.length > 12 ? node.label2.slice(0, 11) + '..' : node.label2}
 						</text>
+					{/if}
+
+					<!-- Timestamp display during deployment -->
+					{#if isDeploying}
+						{@const timestamp = getNodeTimestamp(node.id)}
+						{#if timestamp}
+							<text x="0" y={node.label2 ? 31 : 25} text-anchor="middle" class="text-[3px] fill-cyan-400 font-mono">
+								{formatTimestamp(timestamp)}
+							</text>
+						{/if}
 					{/if}
 
 					<!-- Clickable indicator (external link) -->

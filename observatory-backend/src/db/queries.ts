@@ -14,9 +14,17 @@ export interface Deployment {
   provider: string;
   status: 'queued' | 'in_progress' | 'success' | 'failure';
   commitSha?: string;
+  branch?: string;
   runUrl?: string;
+  // Legacy timestamps (kept for backwards compat)
   startedAt?: Date;
   completedAt?: Date;
+  // Granular phase timestamps
+  pushedAt?: Date;        // When git push was received
+  ciStartedAt?: Date;     // When CI workflow started
+  ciCompletedAt?: Date;   // When CI workflow completed
+  deployStartedAt?: Date; // When deploy to hosting started
+  deployCompletedAt?: Date; // When deploy is live
 }
 
 export interface UptimeCheck {
@@ -78,9 +86,15 @@ export async function getRecentDeployments(projectId: string, limit: number): Pr
       d.provider,
       d.status,
       d.commit_sha as "commitSha",
+      d.branch,
       d.run_url as "runUrl",
       d.started_at as "startedAt",
-      d.completed_at as "completedAt"
+      d.completed_at as "completedAt",
+      d.pushed_at as "pushedAt",
+      d.ci_started_at as "ciStartedAt",
+      d.ci_completed_at as "ciCompletedAt",
+      d.deploy_started_at as "deployStartedAt",
+      d.deploy_completed_at as "deployCompletedAt"
     FROM deployments d
     JOIN services s ON s.id = d.service_id
     WHERE s.project_id = $1
@@ -140,11 +154,19 @@ export async function getStatusHistory(
 export async function insertDeployment(deployment: Deployment): Promise<void> {
   await query(
     `
-    INSERT INTO deployments (id, service_id, provider, status, commit_sha, run_url, started_at, completed_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    INSERT INTO deployments (
+      id, service_id, provider, status, commit_sha, branch, run_url,
+      started_at, completed_at,
+      pushed_at, ci_started_at, ci_completed_at, deploy_started_at, deploy_completed_at
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     ON CONFLICT (id) DO UPDATE SET
       status = EXCLUDED.status,
-      completed_at = EXCLUDED.completed_at
+      completed_at = COALESCE(EXCLUDED.completed_at, deployments.completed_at),
+      ci_started_at = COALESCE(EXCLUDED.ci_started_at, deployments.ci_started_at),
+      ci_completed_at = COALESCE(EXCLUDED.ci_completed_at, deployments.ci_completed_at),
+      deploy_started_at = COALESCE(EXCLUDED.deploy_started_at, deployments.deploy_started_at),
+      deploy_completed_at = COALESCE(EXCLUDED.deploy_completed_at, deployments.deploy_completed_at)
   `,
     [
       deployment.id,
@@ -152,11 +174,48 @@ export async function insertDeployment(deployment: Deployment): Promise<void> {
       deployment.provider,
       deployment.status,
       deployment.commitSha,
+      deployment.branch,
       deployment.runUrl,
       deployment.startedAt,
       deployment.completedAt,
+      deployment.pushedAt,
+      deployment.ciStartedAt,
+      deployment.ciCompletedAt,
+      deployment.deployStartedAt,
+      deployment.deployCompletedAt,
     ]
   );
+}
+
+// Update deployment timestamps by commit SHA (for correlating CI and deploy events)
+export async function updateDeploymentByCommit(
+  commitSha: string,
+  updates: Partial<Pick<Deployment, 'deployStartedAt' | 'deployCompletedAt' | 'status'>>
+): Promise<Deployment | null> {
+  const result = await query<Deployment>(
+    `
+    UPDATE deployments SET
+      deploy_started_at = COALESCE($2, deploy_started_at),
+      deploy_completed_at = COALESCE($3, deploy_completed_at),
+      status = COALESCE($4, status)
+    WHERE commit_sha = $1
+    RETURNING
+      id,
+      service_id as "serviceId",
+      provider,
+      status,
+      commit_sha as "commitSha",
+      branch,
+      run_url as "runUrl",
+      pushed_at as "pushedAt",
+      ci_started_at as "ciStartedAt",
+      ci_completed_at as "ciCompletedAt",
+      deploy_started_at as "deployStartedAt",
+      deploy_completed_at as "deployCompletedAt"
+  `,
+    [commitSha, updates.deployStartedAt, updates.deployCompletedAt, updates.status]
+  );
+  return result.rows[0] || null;
 }
 
 export async function insertStatusCheck(

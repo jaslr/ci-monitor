@@ -27,14 +27,21 @@ export interface ProcessedDeployment {
   id: string;
   projectId: string;
   serviceId: string;
-  provider: 'github';
+  provider: 'github' | 'cloudflare' | 'flyio' | 'gcp';
   status: 'queued' | 'in_progress' | 'success' | 'failure';
-  workflowName: string;
+  workflowName?: string;
   commitSha: string;
   branch: string;
   runUrl: string;
+  // Legacy timestamps
   startedAt: string;
   completedAt?: string;
+  // Granular phase timestamps
+  pushedAt?: string;        // When git push was received (workflow_run requested)
+  ciStartedAt?: string;     // When CI started (workflow_run in_progress)
+  ciCompletedAt?: string;   // When CI completed (workflow_run completed)
+  deployStartedAt?: string; // When hosting deploy started
+  deployCompletedAt?: string; // When hosting deploy is live
 }
 
 export async function handleWorkflowRun(
@@ -58,12 +65,24 @@ export async function handleWorkflowRun(
     return null;
   }
 
-  // Map status
+  // Map status and determine phase timestamps
   let status: 'queued' | 'in_progress' | 'success' | 'failure';
-  if (action === 'completed') {
-    status = workflow_run.conclusion === 'success' ? 'success' : 'failure';
+  let pushedAt: string | undefined;
+  let ciStartedAt: string | undefined;
+  let ciCompletedAt: string | undefined;
+
+  if (action === 'requested') {
+    // Push received, workflow queued
+    status = 'queued';
+    pushedAt = workflow_run.created_at;
   } else if (action === 'in_progress') {
+    // CI started running
     status = 'in_progress';
+    ciStartedAt = workflow_run.updated_at;
+  } else if (action === 'completed') {
+    // CI finished
+    status = workflow_run.conclusion === 'success' ? 'success' : 'failure';
+    ciCompletedAt = workflow_run.updated_at;
   } else {
     status = 'queued';
   }
@@ -78,8 +97,13 @@ export async function handleWorkflowRun(
     commitSha: workflow_run.head_sha,
     branch: workflow_run.head_branch,
     runUrl: workflow_run.html_url,
+    // Legacy timestamps
     startedAt: workflow_run.created_at,
     completedAt: action === 'completed' ? workflow_run.updated_at : undefined,
+    // Granular phase timestamps
+    pushedAt,
+    ciStartedAt,
+    ciCompletedAt,
   };
 
   // Store in database
@@ -90,9 +114,13 @@ export async function handleWorkflowRun(
       provider: deployment.provider,
       status: deployment.status,
       commitSha: deployment.commitSha,
+      branch: deployment.branch,
       runUrl: deployment.runUrl,
       startedAt: new Date(deployment.startedAt),
       completedAt: deployment.completedAt ? new Date(deployment.completedAt) : undefined,
+      pushedAt: pushedAt ? new Date(pushedAt) : undefined,
+      ciStartedAt: ciStartedAt ? new Date(ciStartedAt) : undefined,
+      ciCompletedAt: ciCompletedAt ? new Date(ciCompletedAt) : undefined,
     });
   } catch (err) {
     console.error('Failed to store deployment:', err);

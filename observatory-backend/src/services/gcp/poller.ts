@@ -51,18 +51,27 @@ export async function pollGCPCloudBuild(): Promise<void> {
       console.error(`Failed to store GCP status for ${project.id}:`, err);
     }
 
-    // Store deployment
+    // Store deployment with granular phase timestamps
+    const commitSha = build.sourceProvenance?.resolvedRepoSource?.commitSha ||
+                      build.source?.repoSource?.commitSha;
+    const ciStartedAt = build.startTime ? new Date(build.startTime) : undefined;
+    const ciCompletedAt = build.finishTime ? new Date(build.finishTime) : undefined;
+    const pushedAt = build.createTime ? new Date(build.createTime) : undefined;
+
     try {
       await db.insertDeployment({
         id: `gcp-${build.id}`,
         serviceId: gcpService.id,
         provider: 'gcp',
         status: mapGCPStatusToDeployment(build.status),
-        commitSha: build.sourceProvenance?.resolvedRepoSource?.commitSha ||
-                   build.source?.repoSource?.commitSha,
+        commitSha,
         runUrl: build.logUrl,
-        startedAt: build.startTime ? new Date(build.startTime) : undefined,
-        completedAt: build.finishTime ? new Date(build.finishTime) : undefined,
+        startedAt: ciStartedAt,
+        completedAt: ciCompletedAt,
+        // Granular phase timestamps
+        pushedAt,       // createTime = when build was queued
+        ciStartedAt,    // startTime = when build started
+        ciCompletedAt,  // finishTime = when build completed
       });
     } catch (err) {
       // Might be a duplicate, that's OK
