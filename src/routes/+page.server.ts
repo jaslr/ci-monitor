@@ -123,24 +123,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 					p => p.name.toLowerCase() === repo.toLowerCase() || p.id.toLowerCase() === repo.toLowerCase()
 				);
 
-				if (backendProject?.currentStatus) {
-					return {
-						...gitStatus,
-						deployStatus: mapBackendStatus(backendProject.currentStatus.status),
-						deployPlatform: getHostingPlatform(backendProject),
-						deployedAt: backendProject.currentStatus.checkedAt
-					};
-				}
-
-				// Fallback: For projects where CI = Deploy (GitHub Actions -> Fly.io/Cloudflare),
-				// use CI status as deploy status when no backend data available
-				const ciStatus = gitStatus.status;
-				let fallbackDeployStatus: DeploymentStatus = 'unknown';
-				if (ciStatus === 'success') fallbackDeployStatus = 'success';
-				else if (ciStatus === 'failure') fallbackDeployStatus = 'failure';
-				else if (ciStatus === 'in_progress') fallbackDeployStatus = 'deploying';
-
-				// Get platform from infrastructure config
+				// Get infrastructure config including deployment mechanism
 				const infra = getProjectInfrastructure(repo);
 				const hostingService = infra?.services.find(s => s.category === 'hosting');
 				let platform: HostingPlatform = 'local';
@@ -150,11 +133,38 @@ export const load: PageServerLoad = async ({ locals }) => {
 				else if (hostingService?.provider === 'netlify') platform = 'netlify';
 				else if (hostingService?.provider === 'gcp' || hostingService?.provider === 'firebase') platform = 'gcp';
 
+				// If we have backend status, use it (highest priority)
+				if (backendProject?.currentStatus) {
+					return {
+						...gitStatus,
+						deployStatus: mapBackendStatus(backendProject.currentStatus.status),
+						deployPlatform: getHostingPlatform(backendProject),
+						deployedAt: backendProject.currentStatus.checkedAt
+					};
+				}
+
+				// Determine deploy status based on HOW the project deploys
+				const deployMechanism = infra?.deployMechanism;
+				let deployStatus: DeploymentStatus = 'unknown';
+				let deployedAt: string | null = null;
+
+				if (deployMechanism === 'github-actions') {
+					// GitHub Actions deploys to hosting - CI status IS deploy status
+					const ciStatus = gitStatus.status;
+					if (ciStatus === 'success') deployStatus = 'success';
+					else if (ciStatus === 'failure') deployStatus = 'failure';
+					else if (ciStatus === 'in_progress') deployStatus = 'deploying';
+					deployedAt = gitStatus.run_date;
+				}
+				// For 'local-wrangler', 'local-fly', 'gcp-cloudbuild':
+				// No backend data and CI doesn't deploy - status is unknown
+				// (These deploy directly from local dev, not via CI)
+
 				return {
 					...gitStatus,
-					deployStatus: fallbackDeployStatus,
+					deployStatus,
 					deployPlatform: platform,
-					deployedAt: gitStatus.run_date
+					deployedAt
 				};
 			})
 		);

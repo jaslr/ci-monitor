@@ -9,6 +9,13 @@
 
 import type { Project, InfraService, TechStack, AccountIdentity, LogCommand } from '$lib/types/infrastructure';
 
+// Deployment mechanism: how the project gets deployed
+// - 'github-actions': Push to GitHub triggers CI which deploys (CI status = deploy status)
+// - 'local-wrangler': Deploy directly via wrangler from local dev
+// - 'local-fly': Deploy directly via fly deploy from local dev
+// - 'gcp-cloudbuild': GCP Cloud Build triggered by Cloud Source Repos
+export type DeploymentMechanism = 'github-actions' | 'local-wrangler' | 'local-fly' | 'gcp-cloudbuild';
+
 // Infrastructure metadata by project
 export const INFRASTRUCTURE: Record<string, {
   displayName: string;
@@ -19,6 +26,7 @@ export const INFRASTRUCTURE: Record<string, {
   localPath?: string;
   logCommands?: LogCommand[];
   productionUrl?: string;  // Live production site URL for evidence
+  deployMechanism?: DeploymentMechanism;  // How this project gets deployed
 }> = {
   // ==========================================================================
   // CI-MONITOR - This application (monitors itself!)
@@ -29,6 +37,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/ci-monitor',
     productionUrl: 'https://ci-monitor.pages.dev',
+    deployMechanism: 'local-wrangler',  // Deploys via wrangler pages deploy
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/ci-monitor' },
       { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/ci-monitor/actions' },
@@ -58,6 +67,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/livna',
     productionUrl: 'https://livna.pages.dev',
+    deployMechanism: 'local-wrangler',  // Deploys via wrangler pages deploy
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/livna' },
       { category: 'database', provider: 'supabase', serviceName: 'Supabase Database', status: 'unknown', config: {}, discoveryMethod: 'package_json', dashboardUrl: 'https://supabase.com/dashboard/project/vtyfsrpupgrkkbnsiuqe' },
@@ -96,6 +106,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/brontiq',
     productionUrl: 'https://brontiq.fly.dev',
+    deployMechanism: 'github-actions',  // Push triggers GitHub Actions → Fly.io
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/brontiq' },
       { category: 'database', provider: 'flyio', serviceName: 'Fly.io PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/brontiq-pocketbase' },
@@ -127,6 +138,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/blaterbox/ladderbox',
     productionUrl: 'https://ladderbox.fly.dev',
+    deployMechanism: 'local-fly',  // Deploys via fly deploy (manual workflow disabled)
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/ladderbox' },
       { category: 'database', provider: 'flyio', serviceName: 'Fly.io PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/ladderbox-pocketbase' },
@@ -159,6 +171,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/shippywhippy',
     productionUrl: 'https://shippywhippy.fly.dev',
+    deployMechanism: 'github-actions',  // Push to production triggers GitHub Actions → Fly.io
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/shippywhippy' },
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages (Admin)', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/shippywhippy-admin' },
@@ -191,6 +204,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/loadmanagement',
     productionUrl: 'https://blatblat.fly.dev',
+    deployMechanism: 'github-actions',  // Push to main triggers GitHub Actions → Fly.io
     services: [
       { category: 'hosting', provider: 'flyio', serviceName: 'Fly.io', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://fly.io/apps/blatblat' },
       { category: 'database', provider: 'pocketbase', serviceName: 'PocketBase', status: 'unknown', config: {}, discoveryMethod: 'config_file' },
@@ -221,6 +235,7 @@ export const INFRASTRUCTURE: Record<string, {
     repoOwner: 'jaslr',
     localPath: '/home/chip/littlelistoflights',
     productionUrl: 'https://littlelistoflights.pages.dev',
+    deployMechanism: 'local-wrangler',  // Manual workflow, usually deploys via wrangler
     services: [
       { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/littlelistoflights' },
       { category: 'database', provider: 'supabase', serviceName: 'Supabase Database', status: 'unknown', config: {}, discoveryMethod: 'package_json', dashboardUrl: 'https://supabase.com/dashboard/project/hjrawccyhnvtwulzfbbo' },
@@ -387,6 +402,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://junipa.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',  // GCP Cloud Build triggered by Cloud Source Repos
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa' },
@@ -410,6 +426,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://cedarcollege-prod.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=cedarcollege-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=cedarcollege-prod' },
@@ -433,6 +450,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://menofbusiness-prod.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=menofbusiness-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=menofbusiness-prod' },
@@ -456,6 +474,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://mjc-prod-2022b.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=mjc-prod-2022b' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=mjc-prod-2022b' },
@@ -479,6 +498,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://mjc-tuncurry-prod.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=mjc-tuncurry-prod' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=mjc-tuncurry-prod' },
@@ -502,6 +522,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://junipa-central-demo.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa-central-demo' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa-central-demo' },
@@ -525,6 +546,7 @@ export const INFRASTRUCTURE: Record<string, {
     identity: 'jvp-ux',
     repoOwner: 'jvp-ux',
     productionUrl: 'https://junipa-west-demo.appspot.com',
+    deployMechanism: 'gcp-cloudbuild',
     services: [
       { category: 'hosting', provider: 'gcp', serviceName: 'GCP App Engine', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/appengine?project=junipa-west-demo' },
       { category: 'ci', provider: 'gcp', serviceName: 'GCP Cloud Build', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://console.cloud.google.com/cloud-build/builds?project=junipa-west-demo' },
@@ -556,6 +578,7 @@ export function getProjectInfrastructure(repoName: string): {
   stack: TechStack;
   logCommands?: LogCommand[];
   productionUrl?: string;
+  deployMechanism?: DeploymentMechanism;
 } | null {
   const infra = INFRASTRUCTURE[repoName];
   if (!infra) return null;
@@ -568,6 +591,7 @@ export function getProjectInfrastructure(repoName: string): {
     repoOwner: infra.repoOwner,
     localPath: infra.localPath,
     productionUrl: infra.productionUrl,
+    deployMechanism: infra.deployMechanism,
     services: infra.services.map((s, i) => ({
       ...s,
       id: `${repoName}-${s.provider}-${s.category}-${i}`,
