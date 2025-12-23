@@ -118,11 +118,31 @@ When asked to "get it live" for this project:
 
 ### Task Completion Protocol
 
-When completing a task where work has been signed off:
-1. Run `npm version patch --no-git-tag-version`
-2. Commit with descriptive message
-3. Push to GitHub
-4. Deploy to Cloudflare Pages
+**IMPORTANT: ALWAYS deploy after completing any task. Don't wait to be asked - just get it live.**
+
+When completing a task:
+1. **Commit changes** with a descriptive message
+2. **Bump version**: `npm version patch --no-git-tag-version`
+3. **Commit version bump**: `git add -A && git commit -m "v0.x.x: <description>"`
+4. **Push to GitHub**: `git push`
+5. **Deploy backend** (if backend changes):
+   ```bash
+   cd observatory-backend && fly deploy --now
+   ```
+6. **Run migrations** (if database changes):
+   ```bash
+   fly ssh console -a observatory-backend -C 'node -e "
+   const { Pool } = require(\"pg\");
+   const fs = require(\"fs\");
+   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+   const sql = fs.readFileSync(\"migrations/<migration_file>.sql\", \"utf8\");
+   pool.query(sql).then(() => { console.log(\"Migration successful\"); pool.end(); }).catch(e => { console.error(\"Migration failed:\", e.message); process.exit(1); });
+   "'
+   ```
+7. **Deploy frontend**:
+   ```bash
+   npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=ci-monitor --branch=main
+   ```
 
 ### Deployment (Forked Workflow - No GitHub Actions)
 
