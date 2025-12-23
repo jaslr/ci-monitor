@@ -9,7 +9,7 @@ export const repos: Record<string, string[]> = {
 		'loadmanagement',
 		'Ladderbox',
 		'littlelistoflights',
-		'workwithchip'
+		'wwc'
 	],
 	'jvp-ux': [
 		'vastpuddle.com.au',

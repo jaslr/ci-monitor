@@ -259,6 +259,32 @@ export const INFRASTRUCTURE: Record<string, {
   },
 
   // ==========================================================================
+  // WWC - Work With Chip (Portfolio)
+  // ==========================================================================
+  wwc: {
+    displayName: 'Work With Chip',
+    identity: 'jaslr',
+    repoOwner: 'jaslr',
+    productionUrl: 'https://workwithchip.pages.dev',
+    deployMechanism: 'github-actions',  // Push to main triggers GitHub Actions → Cloudflare Pages
+    services: [
+      { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/workwithchip' },
+      { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/wwc/actions' },
+    ],
+    stack: {
+      framework: 'other',
+      language: 'javascript',
+      css: ['other'],
+      testing: [],
+      buildTool: 'other',
+      packageManager: 'npm',
+    },
+    logCommands: [
+      { label: 'Deploy History', command: 'gh run list --workflow=pages.yml --limit=5', environment: 'production', target: 'all', description: 'GitHub Actions deploys' },
+    ],
+  },
+
+  // ==========================================================================
   // JVP-UX PROJECTS
   // ==========================================================================
   'vastpuddle.com.au': {
