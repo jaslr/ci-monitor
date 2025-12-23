@@ -298,3 +298,323 @@ export async function insertAlert(alert: {
     [alert.projectId, alert.serviceId, alert.alertType, alert.message, alert.channel]
   );
 }
+
+// =============================================================================
+// Project CRUD operations
+// =============================================================================
+
+export interface ProjectRow {
+  id: string;
+  name: string;
+  displayName: string;
+  owner: string;
+  alertLevel: 'hobby' | 'business';
+  alertEmail?: string;
+  uptimeUrl?: string;
+  productionUrl?: string;
+  repoName?: string;
+  deployMechanism?: 'github-actions' | 'local-wrangler' | 'local-fly' | 'gcp-cloudbuild';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ServiceRow {
+  id: string;
+  projectId: string;
+  category: string;
+  provider: string;
+  serviceName: string;
+  checkUrl?: string;
+  dashboardUrl?: string;
+  config: Record<string, unknown>;
+}
+
+export async function getAllProjects(): Promise<ProjectRow[]> {
+  const result = await query<ProjectRow>(`
+    SELECT
+      id,
+      name,
+      display_name as "displayName",
+      owner,
+      alert_level as "alertLevel",
+      alert_email as "alertEmail",
+      uptime_url as "uptimeUrl",
+      production_url as "productionUrl",
+      repo_name as "repoName",
+      deploy_mechanism as "deployMechanism",
+      created_at as "createdAt",
+      updated_at as "updatedAt"
+    FROM projects
+    ORDER BY display_name
+  `);
+  return result.rows;
+}
+
+export async function getProjectById(projectId: string): Promise<ProjectRow | null> {
+  const result = await query<ProjectRow>(
+    `
+    SELECT
+      id,
+      name,
+      display_name as "displayName",
+      owner,
+      alert_level as "alertLevel",
+      alert_email as "alertEmail",
+      uptime_url as "uptimeUrl",
+      production_url as "productionUrl",
+      repo_name as "repoName",
+      deploy_mechanism as "deployMechanism",
+      created_at as "createdAt",
+      updated_at as "updatedAt"
+    FROM projects
+    WHERE id = $1
+  `,
+    [projectId]
+  );
+  return result.rows[0] || null;
+}
+
+export async function getProjectByRepoName(owner: string, repoName: string): Promise<ProjectRow | null> {
+  const result = await query<ProjectRow>(
+    `
+    SELECT
+      id,
+      name,
+      display_name as "displayName",
+      owner,
+      alert_level as "alertLevel",
+      alert_email as "alertEmail",
+      uptime_url as "uptimeUrl",
+      production_url as "productionUrl",
+      repo_name as "repoName",
+      deploy_mechanism as "deployMechanism",
+      created_at as "createdAt",
+      updated_at as "updatedAt"
+    FROM projects
+    WHERE owner = $1 AND (repo_name = $2 OR name = $2)
+  `,
+    [owner, repoName]
+  );
+  return result.rows[0] || null;
+}
+
+export async function createProject(project: {
+  id: string;
+  name: string;
+  displayName: string;
+  owner: string;
+  alertLevel?: 'hobby' | 'business';
+  alertEmail?: string;
+  uptimeUrl?: string;
+  productionUrl?: string;
+  repoName?: string;
+  deployMechanism?: 'github-actions' | 'local-wrangler' | 'local-fly' | 'gcp-cloudbuild';
+}): Promise<ProjectRow> {
+  const result = await query<ProjectRow>(
+    `
+    INSERT INTO projects (id, name, display_name, owner, alert_level, alert_email, uptime_url, production_url, repo_name, deploy_mechanism)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING
+      id,
+      name,
+      display_name as "displayName",
+      owner,
+      alert_level as "alertLevel",
+      alert_email as "alertEmail",
+      uptime_url as "uptimeUrl",
+      production_url as "productionUrl",
+      repo_name as "repoName",
+      deploy_mechanism as "deployMechanism",
+      created_at as "createdAt",
+      updated_at as "updatedAt"
+  `,
+    [
+      project.id,
+      project.name,
+      project.displayName,
+      project.owner,
+      project.alertLevel || 'hobby',
+      project.alertEmail,
+      project.uptimeUrl,
+      project.productionUrl,
+      project.repoName || project.name,
+      project.deployMechanism,
+    ]
+  );
+  return result.rows[0];
+}
+
+export async function updateProject(
+  projectId: string,
+  updates: Partial<{
+    name: string;
+    displayName: string;
+    owner: string;
+    alertLevel: 'hobby' | 'business';
+    alertEmail: string;
+    uptimeUrl: string;
+    productionUrl: string;
+    repoName: string;
+    deployMechanism: 'github-actions' | 'local-wrangler' | 'local-fly' | 'gcp-cloudbuild';
+  }>
+): Promise<ProjectRow | null> {
+  const result = await query<ProjectRow>(
+    `
+    UPDATE projects SET
+      name = COALESCE($2, name),
+      display_name = COALESCE($3, display_name),
+      owner = COALESCE($4, owner),
+      alert_level = COALESCE($5, alert_level),
+      alert_email = COALESCE($6, alert_email),
+      uptime_url = COALESCE($7, uptime_url),
+      production_url = COALESCE($8, production_url),
+      repo_name = COALESCE($9, repo_name),
+      deploy_mechanism = COALESCE($10, deploy_mechanism),
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING
+      id,
+      name,
+      display_name as "displayName",
+      owner,
+      alert_level as "alertLevel",
+      alert_email as "alertEmail",
+      uptime_url as "uptimeUrl",
+      production_url as "productionUrl",
+      repo_name as "repoName",
+      deploy_mechanism as "deployMechanism",
+      created_at as "createdAt",
+      updated_at as "updatedAt"
+  `,
+    [
+      projectId,
+      updates.name,
+      updates.displayName,
+      updates.owner,
+      updates.alertLevel,
+      updates.alertEmail,
+      updates.uptimeUrl,
+      updates.productionUrl,
+      updates.repoName,
+      updates.deployMechanism,
+    ]
+  );
+  return result.rows[0] || null;
+}
+
+export async function deleteProject(projectId: string): Promise<boolean> {
+  const result = await query(`DELETE FROM projects WHERE id = $1`, [projectId]);
+  return (result.rowCount ?? 0) > 0;
+}
+
+// =============================================================================
+// Service CRUD operations
+// =============================================================================
+
+export async function getServicesByProject(projectId: string): Promise<ServiceRow[]> {
+  const result = await query<ServiceRow>(
+    `
+    SELECT
+      id,
+      project_id as "projectId",
+      category,
+      provider,
+      service_name as "serviceName",
+      check_url as "checkUrl",
+      dashboard_url as "dashboardUrl",
+      config
+    FROM services
+    WHERE project_id = $1
+    ORDER BY category, provider
+  `,
+    [projectId]
+  );
+  return result.rows;
+}
+
+export async function createService(service: {
+  id: string;
+  projectId: string;
+  category: string;
+  provider: string;
+  serviceName: string;
+  checkUrl?: string;
+  dashboardUrl?: string;
+  config?: Record<string, unknown>;
+}): Promise<ServiceRow> {
+  const result = await query<ServiceRow>(
+    `
+    INSERT INTO services (id, project_id, category, provider, service_name, check_url, dashboard_url, config)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING
+      id,
+      project_id as "projectId",
+      category,
+      provider,
+      service_name as "serviceName",
+      check_url as "checkUrl",
+      dashboard_url as "dashboardUrl",
+      config
+  `,
+    [
+      service.id,
+      service.projectId,
+      service.category,
+      service.provider,
+      service.serviceName,
+      service.checkUrl,
+      service.dashboardUrl,
+      JSON.stringify(service.config || {}),
+    ]
+  );
+  return result.rows[0];
+}
+
+export async function updateService(
+  serviceId: string,
+  updates: Partial<{
+    category: string;
+    provider: string;
+    serviceName: string;
+    checkUrl: string;
+    dashboardUrl: string;
+    config: Record<string, unknown>;
+  }>
+): Promise<ServiceRow | null> {
+  const result = await query<ServiceRow>(
+    `
+    UPDATE services SET
+      category = COALESCE($2, category),
+      provider = COALESCE($3, provider),
+      service_name = COALESCE($4, service_name),
+      check_url = COALESCE($5, check_url),
+      dashboard_url = COALESCE($6, dashboard_url),
+      config = COALESCE($7, config)
+    WHERE id = $1
+    RETURNING
+      id,
+      project_id as "projectId",
+      category,
+      provider,
+      service_name as "serviceName",
+      check_url as "checkUrl",
+      dashboard_url as "dashboardUrl",
+      config
+  `,
+    [
+      serviceId,
+      updates.category,
+      updates.provider,
+      updates.serviceName,
+      updates.checkUrl,
+      updates.dashboardUrl,
+      updates.config ? JSON.stringify(updates.config) : undefined,
+    ]
+  );
+  return result.rows[0] || null;
+}
+
+export async function deleteService(serviceId: string): Promise<boolean> {
+  const result = await query(`DELETE FROM services WHERE id = $1`, [serviceId]);
+  return (result.rowCount ?? 0) > 0;
+}

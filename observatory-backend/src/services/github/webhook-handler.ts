@@ -1,4 +1,3 @@
-import { getProjectByOwnerRepo } from '../../config/projects.js';
 import * as db from '../../db/queries.js';
 
 export interface WorkflowRunPayload {
@@ -51,15 +50,16 @@ export async function handleWorkflowRun(
   const owner = repository.owner.login;
   const repo = repository.name;
 
-  // Find the project
-  const project = getProjectByOwnerRepo(owner, repo);
+  // Find the project from database
+  const project = await db.getProjectByRepoName(owner, repo);
   if (!project) {
     console.log(`Unknown repo: ${owner}/${repo}, skipping`);
     return null;
   }
 
-  // Find the CI service for this project
-  const ciService = project.services.find((s) => s.category === 'ci' && s.provider === 'github');
+  // Find the CI service for this project from database
+  const services = await db.getServicesByProject(project.id);
+  const ciService = services.find((s) => s.category === 'ci' && s.provider === 'github');
   if (!ciService) {
     console.log(`No GitHub CI service configured for ${project.id}`);
     return null;
