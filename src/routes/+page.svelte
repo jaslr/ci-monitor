@@ -298,6 +298,13 @@
 		return getProjectInfrastructure(repoName);
 	}
 
+	// Get the hosting service's dashboard URL for build/deploy evidence
+	function getHostingDashboardUrl(infra: ReturnType<typeof getProjectInfrastructure>): string | null {
+		if (!infra) return null;
+		const hostingService = infra.services.find(s => s.category === 'hosting');
+		return hostingService?.dashboardUrl || null;
+	}
+
 	const statusColors: Record<WorkflowStatus, string> = {
 		success: 'bg-green-500',
 		failure: 'bg-red-500',
@@ -946,6 +953,7 @@
 						<div class="bg-gray-900 rounded-lg p-4">
 							<!-- Status Banner -->
 							{#if selectedStatus.deployStatus === 'failure'}
+								{@const hostingDashboard = getHostingDashboardUrl(selectedInfra)}
 								<div class="flex items-center gap-3 mb-4 p-3 bg-red-900/30 border border-red-800 rounded">
 									<AlertTriangle class="w-5 h-5 text-red-400 shrink-0" />
 									<div class="flex-1 min-w-0">
@@ -969,20 +977,21 @@
 												<ExternalLink class="w-3 h-3" />
 											</a>
 										{/if}
-										{#if selectedInfra?.productionUrl}
+										{#if hostingDashboard}
 											<a
-												href={selectedInfra.productionUrl}
+												href={hostingDashboard}
 												target="_blank"
 												rel="noopener noreferrer"
 												class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-100 transition-colors flex items-center gap-2"
 											>
-												View Site
+												View Dashboard
 												<ExternalLink class="w-3 h-3" />
 											</a>
 										{/if}
 									</div>
 								</div>
 							{:else if selectedStatus.deployStatus === 'deploying'}
+								{@const hostingDashboard = getHostingDashboardUrl(selectedInfra)}
 								<div class="flex items-center gap-3 mb-4 p-3 bg-cyan-900/30 border border-cyan-800 rounded">
 									<svg class="w-5 h-5 animate-spin text-cyan-400 shrink-0" viewBox="0 0 16 16">
 										<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="7" stroke-linecap="round" />
@@ -1003,20 +1012,21 @@
 												<ExternalLink class="w-3 h-3" />
 											</a>
 										{/if}
-										{#if selectedInfra?.productionUrl}
+										{#if hostingDashboard}
 											<a
-												href={selectedInfra.productionUrl}
+												href={hostingDashboard}
 												target="_blank"
 												rel="noopener noreferrer"
 												class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-100 transition-colors flex items-center gap-2"
 											>
-												View Site
+												View Dashboard
 												<ExternalLink class="w-3 h-3" />
 											</a>
 										{/if}
 									</div>
 								</div>
 							{:else if selectedStatus.deployStatus === 'success'}
+								{@const hostingDashboard = getHostingDashboardUrl(selectedInfra)}
 								<div class="flex items-center gap-3 mb-4 p-3 bg-green-900/30 border border-green-800 rounded">
 									<div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
 										<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1027,14 +1037,14 @@
 										<div class="text-green-400 font-medium">Deployed Successfully</div>
 										<div class="text-sm text-green-300/70">{selectedStatus.workflow_name || 'Last deployment succeeded'}</div>
 									</div>
-									{#if selectedInfra?.productionUrl}
+									{#if hostingDashboard}
 										<a
-											href={selectedInfra.productionUrl}
+											href={hostingDashboard}
 											target="_blank"
 											rel="noopener noreferrer"
 											class="px-3 py-1.5 bg-green-800 hover:bg-green-700 rounded text-sm text-green-100 transition-colors flex items-center gap-2 shrink-0"
 										>
-											View Site
+											View Dashboard
 											<ExternalLink class="w-3 h-3" />
 										</a>
 									{/if}
