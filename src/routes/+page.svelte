@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { sseClient, type SSEEvent, type DeploymentEvent } from '$lib/services/sse-client';
+	import { getCachedData, setCachedData } from '$lib/stores/dataCache';
 	import {
 		Cloud,
 		Database,
@@ -34,9 +35,12 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Local state for real-time updates
-	let statuses = $state<RepoStatus[]>(data.statuses);
-	let lastUpdated = $state(data.lastUpdated);
+	// Load cached data for instant display (before server data arrives)
+	const cachedOnLoad = browser ? getCachedData() : null;
+
+	// Local state for real-time updates - use cache first for instant load
+	let statuses = $state<RepoStatus[]>(cachedOnLoad?.statuses || data.statuses);
+	let lastUpdated = $state(cachedOnLoad?.lastUpdated || data.lastUpdated);
 	let sseConnected = $state(false);
 	let connectionInfo = $state(sseClient.connectionStatus);
 	let showConnectionDetails = $state(false);
@@ -44,10 +48,14 @@
 	// Track deployment timestamps per project (for infra flow diagram)
 	let deploymentTimestamps = $state<Record<string, DeploymentTimestamps>>({});
 
-	// Update local state when server data changes (navigation, etc.)
+	// Update local state when server data changes and save to cache
 	$effect(() => {
-		statuses = data.statuses;
-		lastUpdated = data.lastUpdated;
+		if (data.statuses && data.statuses.length > 0) {
+			statuses = data.statuses;
+			lastUpdated = data.lastUpdated;
+			// Cache the fresh data for next visit
+			setCachedData(data.statuses, data.lastUpdated);
+		}
 	});
 
 	// SSE connection for real-time updates
