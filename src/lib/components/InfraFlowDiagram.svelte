@@ -457,9 +457,9 @@
 	>
 		<svg
 			viewBox="{viewBox().x} {viewBox().y} {viewBox().width} {viewBox().height}"
-			class="w-full h-full max-h-full transition-transform"
+			class="w-auto h-auto max-w-full max-h-full transition-transform"
 			preserveAspectRatio="xMidYMid meet"
-			style="transform: scale({scale}); transform-origin: center;"
+			style="transform: scale({scale}); transform-origin: center; width: min(100%, 500px); height: min(100%, 350px);"
 		>
 			<defs>
 				<!-- Green arrow for data flow (site→backend) -->
