@@ -29,18 +29,18 @@ export const INFRASTRUCTURE: Record<string, {
   deployMechanism?: DeploymentMechanism;  // How this project gets deployed
 }> = {
   // ==========================================================================
-  // CI-MONITOR - This application (monitors itself!)
+  // ORCHON - This application (monitors itself!)
   // ==========================================================================
-  'ci-monitor': {
-    displayName: 'Infrastructure Observatory',
+  'orchon': {
+    displayName: 'Orchon',
     identity: 'jaslr',
     repoOwner: 'jaslr',
-    localPath: '/home/chip/ci-monitor',
-    productionUrl: 'https://ci-monitor.pages.dev',
+    localPath: '/home/chip/orchon',
+    productionUrl: 'https://orchon.pages.dev',
     deployMechanism: 'local-wrangler',  // Deploys via wrangler pages deploy
     services: [
-      { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/ci-monitor' },
-      { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/ci-monitor/actions' },
+      { category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://dash.cloudflare.com/?to=/:account/pages/view/orchon' },
+      { category: 'ci', provider: 'github', serviceName: 'GitHub Actions', status: 'unknown', config: {}, discoveryMethod: 'config_file', dashboardUrl: 'https://github.com/jaslr/orchon/actions' },
     ],
     stack: {
       framework: 'sveltekit',
@@ -54,7 +54,6 @@ export const INFRASTRUCTURE: Record<string, {
     },
     logCommands: [
       { label: 'Dev Server', command: 'npm run dev 2>&1 | tail -f', environment: 'local', target: 'server', description: 'Dev server output' },
-      { label: 'PocketBase', command: 'npm run pocketbase', environment: 'local', target: 'database', description: 'Local PocketBase logs' },
     ],
   },
 

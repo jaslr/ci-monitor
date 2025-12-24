@@ -1,4 +1,4 @@
-// Project configuration - synced with ci-monitor frontend
+// Project configuration - synced with orchon frontend
 // This defines which projects we monitor and their alert levels
 
 export interface ProjectConfig {
@@ -54,15 +54,15 @@ export const projects: ProjectConfig[] = [
     ],
   },
   {
-    id: 'ci-monitor',
-    name: 'ci-monitor',
-    displayName: 'Infrastructure Observatory',
+    id: 'orchon',
+    name: 'orchon',
+    displayName: 'Orchon',
     owner: 'jaslr',
     alertLevel: 'hobby',
-    uptimeUrl: 'https://ci-monitor.pages.dev',
+    uptimeUrl: 'https://orchon.pages.dev',
     services: [
-      { id: 'ci-monitor-hosting', category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', cfProjectName: 'ci-monitor' },
-      { id: 'ci-monitor-ci', category: 'ci', provider: 'github', serviceName: 'GitHub Actions' },
+      { id: 'orchon-hosting', category: 'hosting', provider: 'cloudflare', serviceName: 'Cloudflare Pages', cfProjectName: 'orchon' },
+      { id: 'orchon-ci', category: 'ci', provider: 'github', serviceName: 'GitHub Actions' },
     ],
   },
   {
