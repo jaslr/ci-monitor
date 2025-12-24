@@ -9,10 +9,7 @@
 		HardDrive,
 		GitBranch,
 		AlertTriangle,
-		ExternalLink,
-		Plus,
-		Minus,
-		Maximize2
+		ExternalLink
 	} from '@lucide/svelte';
 
 	// Deployment timestamps for each stage
@@ -34,11 +31,6 @@
 	}
 
 	let { services, projectName, domain, animated = true, isDeploying = false, deploymentTimestamps }: Props = $props();
-
-	// Zoom and pan state
-	let panX = $state(0);
-	let panY = $state(0);
-	let containerEl: HTMLDivElement | null = $state(null);
 
 	// Logo display state - persisted to localStorage
 	const SHOW_LOGOS_KEY = 'infra-diagram-show-logos';
@@ -64,54 +56,32 @@
 		}
 	}
 
-	// Drag state
-	let isDragging = $state(false);
-	let dragStartX = $state(0);
-	let dragStartY = $state(0);
-	let dragStartPanX = $state(0);
-	let dragStartPanY = $state(0);
-
-	const MIN_SCALE = 0.2;
-	const MAX_SCALE = 4;
-	const ZOOM_STEP = 0.1;
-
 	// Build nodes from services - include dashboard URLs
 	let nodes = $derived(buildNodes(services, projectName, domain));
 	let edges = $derived(buildEdges(nodes));
 
 	// Calculate dynamic viewBox based on actual node positions
-	// Scale factor of 3 makes default view show nodes at ~45-50px diameter
-	const SCALE_FACTOR = 3;
-
+	// ViewBox matches content bounds - SVG naturally fills container
 	let viewBox = $derived(() => {
-		if (nodes.length === 0) return { x: 0, y: 0, width: 230 * SCALE_FACTOR, height: 100 };
+		if (nodes.length === 0) return { x: 0, y: 0, width: 200, height: 150 };
 
-		const padding = 25; // Space for labels below nodes
-		const topMargin = 30; // ~100px from top at 3x scale
+		const padding = 30; // Space for labels below nodes
+		const sidePadding = 20; // Horizontal padding
 
+		const minX = Math.min(...nodes.map(n => n.x ?? 0));
+		const maxX = Math.max(...nodes.map(n => n.x ?? 0));
 		const minY = Math.min(...nodes.map(n => n.y ?? 0));
-		const maxY = Math.max(...nodes.map(n => n.y ?? 0)) + padding;
+		const maxY = Math.max(...nodes.map(n => n.y ?? 0));
 
-		// Height based on actual content (NOT scaled - just the content bounds)
-		const contentHeight = maxY - minY + topMargin + 10;
+		const contentWidth = maxX - minX + sidePadding * 2;
+		const contentHeight = maxY - minY + padding * 2;
 
 		return {
-			x: -115, // Center the content horizontally in wider viewBox
-			y: minY - topMargin,
-			width: 230 * SCALE_FACTOR,
-			height: Math.max(80, contentHeight) // No scale factor on height
+			x: minX - sidePadding,
+			y: minY - padding,
+			width: Math.max(180, contentWidth),
+			height: Math.max(120, contentHeight)
 		};
-	});
-
-	// Default to 200% scale for better mobile visibility
-	let baseScale = $derived(2);
-	let scale = $state(2);
-
-	// Initialize scale when nodes change
-	$effect(() => {
-		scale = baseScale;
-		panX = 0;
-		panY = 0;
 	});
 
 	const nodeIcons: Record<string, typeof Cloud> = {
@@ -404,94 +374,11 @@
 			window.open(node.dashboardUrl, '_blank', 'noopener,noreferrer');
 		}
 	}
-
-	function zoomIn() {
-		scale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
-	}
-
-	function zoomOut() {
-		scale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
-	}
-
-	function handleWheel(e: WheelEvent) {
-		e.preventDefault();
-		const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-		const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
-
-		if (containerEl && newScale !== scale) {
-			const rect = containerEl.getBoundingClientRect();
-			const centerX = rect.width / 2;
-			const centerY = rect.height / 2;
-
-			// Get mouse position relative to center
-			const mouseX = e.clientX - rect.left - centerX;
-			const mouseY = e.clientY - rect.top - centerY;
-
-			// Adjust pan to zoom toward cursor
-			const scaleFactor = newScale / scale;
-			panX = panX * scaleFactor - mouseX * (scaleFactor - 1) / newScale;
-			panY = panY * scaleFactor - mouseY * (scaleFactor - 1) / newScale;
-		}
-
-		scale = newScale;
-	}
-
-	function resetZoom() {
-		scale = baseScale;
-		panX = 0;
-		panY = 0;
-	}
-
-	function maximizeView() {
-		// Scale to fill the container width while keeping aspect ratio
-		// The viewBox width is 690 (230 * 3), so we calculate how much to scale
-		// to make content fill available width
-		if (containerEl) {
-			const containerWidth = containerEl.getBoundingClientRect().width;
-			const contentWidth = 230; // Original content width before SCALE_FACTOR
-			const currentViewBoxWidth = viewBox().width;
-			// Calculate scale to make content fill ~90% of container width
-			const targetScale = (containerWidth * 0.9) / (contentWidth * (currentViewBoxWidth / (230 * SCALE_FACTOR)));
-			scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, targetScale / SCALE_FACTOR));
-			panX = 0;
-			panY = 0;
-		}
-	}
-
-	function handleMouseDown(e: MouseEvent) {
-		// Don't start drag if clicking on a node
-		if ((e.target as HTMLElement).closest('g[role="button"]')) return;
-
-		isDragging = true;
-		dragStartX = e.clientX;
-		dragStartY = e.clientY;
-		dragStartPanX = panX;
-		dragStartPanY = panY;
-	}
-
-	function handleMouseMove(e: MouseEvent) {
-		if (!isDragging) return;
-
-		const dx = e.clientX - dragStartX;
-		const dy = e.clientY - dragStartY;
-
-		panX = dragStartPanX + dx / scale;
-		panY = dragStartPanY + dy / scale;
-	}
-
-	function handleMouseUp() {
-		isDragging = false;
-	}
-
-	function handleMouseLeave() {
-		isDragging = false;
-	}
 </script>
 
-<div class="relative w-full h-full flex flex-col" bind:this={containerEl}>
-	<!-- Controls - positioned at top right, 32px touch targets -->
-	<div class="absolute top-0 right-0 flex items-center gap-1 z-20">
-		<!-- Logo Toggle -->
+<div class="relative w-full h-full flex flex-col">
+	<!-- Logo Toggle Control -->
+	<div class="absolute top-0 right-0 z-20">
 		<button
 			onclick={toggleShowLogos}
 			class="flex items-center justify-center w-8 h-8 hover:bg-gray-700/50 text-xs transition-colors {showLogos ? 'text-gray-200' : 'text-gray-500'}"
@@ -501,53 +388,14 @@
 				<span class="absolute top-0.5 {showLogos ? 'right-0.5' : 'left-0.5'} w-2 h-2 bg-white transition-all"></span>
 			</span>
 		</button>
-
-		<!-- Zoom Controls -->
-		<button
-			onclick={zoomOut}
-			class="flex items-center justify-center w-8 h-8 hover:bg-gray-700/50 text-gray-400 hover:text-gray-200 transition-colors"
-			title="Zoom out"
-		>
-			<Minus class="w-5 h-5" />
-		</button>
-		<button
-			onclick={resetZoom}
-			class="flex items-center justify-center min-w-[48px] h-8 hover:bg-gray-700/50 text-xs text-gray-400 hover:text-gray-200 transition-colors"
-			title="Reset zoom"
-		>
-			{Math.round(scale * 100)}%
-		</button>
-		<button
-			onclick={zoomIn}
-			class="flex items-center justify-center w-8 h-8 hover:bg-gray-700/50 text-gray-400 hover:text-gray-200 transition-colors"
-			title="Zoom in"
-		>
-			<Plus class="w-5 h-5" />
-		</button>
-		<button
-			onclick={maximizeView}
-			class="flex items-center justify-center w-8 h-8 hover:bg-gray-700/50 text-gray-400 hover:text-gray-200 transition-colors"
-			title="Maximize"
-		>
-			<Maximize2 class="w-5 h-5" />
-		</button>
 	</div>
 
-	<!-- Diagram Canvas -->
-	<div
-		class="flex-1 w-full overflow-hidden select-none {isDragging ? 'cursor-grabbing' : 'cursor-grab'}"
-		onwheel={handleWheel}
-		onmousedown={handleMouseDown}
-		onmousemove={handleMouseMove}
-		onmouseup={handleMouseUp}
-		onmouseleave={handleMouseLeave}
-		role="application"
-		aria-label="Infrastructure diagram - drag to pan, scroll to zoom"
-	>
+	<!-- Diagram Canvas - SVG fills container naturally -->
+	<div class="flex-1 w-full flex items-center justify-center">
 		<svg
 			viewBox="{viewBox().x} {viewBox().y} {viewBox().width} {viewBox().height}"
-			class="w-full"
-			style="aspect-ratio: {viewBox().width}/{viewBox().height}; transform: scale({scale}) translate({panX / scale}px, {panY / scale}px); transform-origin: center;"
+			class="w-full h-full max-h-full"
+			preserveAspectRatio="xMidYMid meet"
 		>
 			<defs>
 				<!-- Green arrow for data flow (site→backend) -->

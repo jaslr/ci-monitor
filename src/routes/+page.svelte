@@ -1133,11 +1133,8 @@
 
 					<!-- Flow Diagram -->
 					<div class="shrink-0 px-6 py-4 border-b border-gray-700">
-						<div class="flex items-center justify-between mb-2">
-							<div class="text-xs text-gray-500 uppercase tracking-wider">Infrastructure Flow</div>
-							<div class="text-xs text-gray-600">Drag to pan • Scroll to zoom</div>
-						</div>
-						<div class="bg-gray-900 p-3 pt-8">
+						<div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Infrastructure Flow</div>
+						<div class="bg-gray-900 p-3">
 							<InfraFlowDiagram
 								services={selectedInfra.services}
 								projectName={selectedInfra.displayName}
