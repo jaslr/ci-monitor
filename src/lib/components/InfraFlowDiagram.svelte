@@ -37,6 +37,12 @@
 
 	// Container reference for size calculations
 	let containerEl: HTMLDivElement | null = $state(null);
+	let containerWidth = $state(0);
+	let containerHeight = $state(0);
+
+	// Target node size in pixels at 100% zoom
+	const TARGET_NODE_SIZE_PX = 70; // nodes should be ~70px diameter
+	const NODE_SVG_DIAMETER = 24; // node radius is 12, diameter 24 in SVG units
 
 	// Zoom state
 	let scale = $state(1);
@@ -60,6 +66,24 @@
 		}
 	});
 
+	// Track container size for viewBox calculations
+	$effect(() => {
+		if (!containerEl || typeof window === 'undefined') return;
+
+		const updateSize = () => {
+			if (containerEl) {
+				containerWidth = containerEl.clientWidth;
+				containerHeight = containerEl.clientHeight;
+			}
+		};
+
+		updateSize();
+		const resizeObserver = new ResizeObserver(updateSize);
+		resizeObserver.observe(containerEl);
+
+		return () => resizeObserver.disconnect();
+	});
+
 	// Persist showLogos changes to localStorage
 	function toggleShowLogos() {
 		showLogos = !showLogos;
@@ -78,7 +102,8 @@
 	// For 80px nodes: scale = 80/24 = 3.33x, so viewBox height = 288/3.33 = 86
 	// We use a compact viewBox so the SVG scales up to show nodes at ~80px
 
-	// Calculate dynamic viewBox based on actual node positions
+	// Calculate dynamic viewBox based on container size and desired node size
+	// This ensures nodes render at TARGET_NODE_SIZE_PX regardless of container size
 	let viewBox = $derived(() => {
 		if (nodes.length === 0) return { x: 0, y: 0, width: 120, height: 90 };
 
@@ -90,14 +115,37 @@
 		const minY = Math.min(...nodes.map(n => n.y ?? 0));
 		const maxY = Math.max(...nodes.map(n => n.y ?? 0));
 
+		// Content bounds in SVG units
 		const contentWidth = maxX - minX + sidePadding * 2;
 		const contentHeight = maxY - minY + padding * 2;
 
+		// Calculate the scale factor needed for nodes to appear at target size
+		// scale = targetPixels / svgUnits, so svgUnits = containerPixels / scale
+		const targetScale = TARGET_NODE_SIZE_PX / NODE_SVG_DIAMETER;
+
+		// ViewBox dimensions based on container size (if available) to maintain consistent node size
+		let viewBoxWidth = contentWidth;
+		let viewBoxHeight = contentHeight;
+
+		if (containerWidth > 0 && containerHeight > 0) {
+			// Calculate viewBox size that will render nodes at target size
+			viewBoxWidth = containerWidth / targetScale;
+			viewBoxHeight = containerHeight / targetScale;
+
+			// Ensure viewBox is at least big enough for content
+			viewBoxWidth = Math.max(viewBoxWidth, contentWidth);
+			viewBoxHeight = Math.max(viewBoxHeight, contentHeight);
+		}
+
+		// Center content in viewBox
+		const centerX = (minX + maxX) / 2;
+		const centerY = (minY + maxY) / 2;
+
 		return {
-			x: minX - sidePadding,
-			y: minY - padding,
-			width: Math.max(190, contentWidth),
-			height: Math.max(140, contentHeight)
+			x: centerX - viewBoxWidth / 2,
+			y: centerY - viewBoxHeight / 2,
+			width: viewBoxWidth,
+			height: viewBoxHeight
 		};
 	});
 
@@ -412,7 +460,7 @@
 	}
 </script>
 
-<div class="relative w-full h-full flex flex-col" bind:this={containerEl}>
+<div class="relative w-full h-full flex flex-col">
 	<!-- Controls - positioned at top right -->
 	<div class="absolute top-0 right-0 flex items-center gap-1 z-20">
 		<!-- Logo Toggle -->
@@ -454,12 +502,13 @@
 	<div
 		class="flex-1 w-full flex items-center justify-center overflow-hidden"
 		onwheel={handleWheel}
+		bind:this={containerEl}
 	>
 		<svg
 			viewBox="{viewBox().x} {viewBox().y} {viewBox().width} {viewBox().height}"
-			class="w-auto h-auto max-w-full max-h-full transition-transform"
+			class="w-full h-full transition-transform"
 			preserveAspectRatio="xMidYMid meet"
-			style="transform: scale({scale}); transform-origin: center; width: min(100%, 500px); height: min(100%, 350px);"
+			style="transform: scale({scale}); transform-origin: center;"
 		>
 			<defs>
 				<!-- Green arrow for data flow (site→backend) -->
