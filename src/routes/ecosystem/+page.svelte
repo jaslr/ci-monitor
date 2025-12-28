@@ -144,7 +144,7 @@
 								<div class="flex flex-wrap gap-1.5 mt-2">
 									{#each provider.projects as project}
 										<a
-											href="/deployments?project={project.id}"
+											href="/projects?project={project.id}"
 											class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors text-gray-300 hover:text-white"
 										>
 											{project.displayName}

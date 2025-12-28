@@ -20,14 +20,14 @@
 	</a>
 
 	<a
-		href="/deployments"
-		class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors {currentPath === '/deployments' || currentPath.startsWith('/deployments')
+		href="/projects"
+		class="flex items-center gap-3 px-4 py-2.5 text-left transition-colors {currentPath === '/projects' || currentPath.startsWith('/projects')
 			? 'bg-gray-800 border-l-2 border-blue-500'
 			: 'hover:bg-gray-800/50 border-l-2 border-transparent'}"
 	>
-		<Layers class="w-4 h-4 {currentPath === '/deployments' || currentPath.startsWith('/deployments') ? 'text-blue-400' : 'text-gray-500'} shrink-0" />
+		<Layers class="w-4 h-4 {currentPath === '/projects' || currentPath.startsWith('/projects') ? 'text-blue-400' : 'text-gray-500'} shrink-0" />
 		<div class="flex-1 min-w-0">
-			<div class="font-medium text-sm {currentPath === '/deployments' || currentPath.startsWith('/deployments') ? 'text-white' : 'text-gray-300'} truncate">Deployments</div>
+			<div class="font-medium text-sm {currentPath === '/projects' || currentPath.startsWith('/projects') ? 'text-white' : 'text-gray-300'} truncate">Projects</div>
 		</div>
 	</a>
 

@@ -139,9 +139,9 @@
 </svelte:head>
 
 <!-- Console Activity Log -->
-<div class="flex-1 flex flex-col lg:flex-row min-h-0 h-full overflow-hidden">
+<div class="flex-1 flex flex-col lg:flex-row min-h-0 h-full overflow-hidden gap-4 lg:gap-6 p-4">
 	<!-- Left Panel: Recent Deployments -->
-	<div class="flex-1 flex flex-col border-r border-gray-800 min-w-0">
+	<div class="flex-1 flex flex-col border border-gray-800 rounded-lg min-w-0 overflow-hidden">
 		<div class="shrink-0 px-4 py-3 border-b border-gray-800 flex items-center justify-between">
 			<div class="flex items-center gap-2 text-gray-400">
 				<Cloud class="w-4 h-4" />
@@ -203,7 +203,7 @@
 	</div>
 
 	<!-- Right Panel: Recent Commits -->
-	<div class="flex-1 flex flex-col min-w-0">
+	<div class="flex-1 flex flex-col border border-gray-800 rounded-lg min-w-0 overflow-hidden">
 		<div class="shrink-0 px-4 py-3 border-b border-gray-800 flex items-center justify-between">
 			<div class="flex items-center gap-2 text-gray-400">
 				<GitCommit class="w-4 h-4" />
