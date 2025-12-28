@@ -116,6 +116,10 @@
 						class="flex-1 py-2 text-center text-sm {page.url.pathname.startsWith('/projects') ? 'text-white border-b-2 border-blue-500' : 'text-gray-400'}"
 					>Projects</a>
 					<a
+						href="/deployments"
+						class="flex-1 py-2 text-center text-sm {page.url.pathname.startsWith('/deployments') ? 'text-white border-b-2 border-blue-500' : 'text-gray-400'}"
+					>Deploys</a>
+					<a
 						href="/ecosystem"
 						class="flex-1 py-2 text-center text-sm {page.url.pathname === '/ecosystem' ? 'text-white border-b-2 border-blue-500' : 'text-gray-400'}"
 					>Ecosystem</a>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Activity, Layers, Network } from '@lucide/svelte';
+	import { Activity, Layers, Network, Cloud } from '@lucide/svelte';
 
 	// Determine active route
 	let currentPath = $derived(page.url.pathname);
@@ -28,6 +28,19 @@
 		<Layers class="w-4 h-4 {currentPath === '/projects' || currentPath.startsWith('/projects') ? 'text-blue-400' : 'text-gray-500'} shrink-0" />
 		<div class="flex-1 min-w-0">
 			<div class="font-medium text-sm {currentPath === '/projects' || currentPath.startsWith('/projects') ? 'text-white' : 'text-gray-300'} truncate">Projects</div>
+		</div>
+	</a>
+
+	<!-- Deployments sub-menu under Projects -->
+	<a
+		href="/deployments"
+		class="flex items-center gap-3 pl-8 pr-4 py-2 text-left transition-colors {currentPath === '/deployments' || currentPath.startsWith('/deployments')
+			? 'bg-gray-800/50 border-l-2 border-blue-400'
+			: 'hover:bg-gray-800/30 border-l-2 border-transparent'}"
+	>
+		<Cloud class="w-3.5 h-3.5 {currentPath === '/deployments' || currentPath.startsWith('/deployments') ? 'text-blue-400' : 'text-gray-500'} shrink-0" />
+		<div class="flex-1 min-w-0">
+			<div class="text-sm {currentPath === '/deployments' || currentPath.startsWith('/deployments') ? 'text-white' : 'text-gray-400'} truncate">Deployments</div>
 		</div>
 	</a>
 
