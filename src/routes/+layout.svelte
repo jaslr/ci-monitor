@@ -4,12 +4,24 @@
 	import { page } from '$app/state';
 	import { Radio, Settings } from '@lucide/svelte';
 	import MainNav from '$lib/components/MainNav.svelte';
+	import { sseClient } from '$lib/services/sse-client';
 
 	let { children, data } = $props();
 
-	// SSE connection status (shared across pages)
+	// SSE connection status - poll the actual client status
 	let sseConnected = $state(false);
 	let showConnectionDetails = $state(false);
+
+	// Poll SSE connection status every second
+	$effect(() => {
+		if (!browser) return;
+		const interval = setInterval(() => {
+			sseConnected = sseClient.isConnected;
+		}, 1000);
+		// Initial check
+		sseConnected = sseClient.isConnected;
+		return () => clearInterval(interval);
+	});
 
 	// Register service worker for PWA
 	$effect(() => {
