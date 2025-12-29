@@ -663,33 +663,37 @@ export async function deleteService(serviceId: string): Promise<boolean> {
 // DoeWah integration queries
 // =============================================================================
 
-// Get failed deployments globally (for DoeWah bot queries)
+// Get projects where the LATEST deployment failed (currently broken)
 export async function getFailedDeployments(limit: number): Promise<GlobalDeployment[]> {
   const result = await query<GlobalDeployment>(
     `
-    SELECT
-      d.id,
-      d.service_id as "serviceId",
-      d.provider,
-      d.status,
-      d.commit_sha as "commitSha",
-      d.branch,
-      d.run_url as "runUrl",
-      d.started_at as "startedAt",
-      d.completed_at as "completedAt",
-      d.pushed_at as "pushedAt",
-      d.ci_started_at as "ciStartedAt",
-      d.ci_completed_at as "ciCompletedAt",
-      d.deploy_started_at as "deployStartedAt",
-      d.deploy_completed_at as "deployCompletedAt",
-      p.id as "projectId",
-      p.name as "projectName",
-      p.display_name as "projectDisplayName"
-    FROM deployments d
-    JOIN services s ON s.id = d.service_id
-    JOIN projects p ON p.id = s.project_id
-    WHERE d.status = 'failure'
-    ORDER BY COALESCE(d.deploy_completed_at, d.completed_at, d.created_at) DESC
+    WITH latest_per_project AS (
+      SELECT DISTINCT ON (p.id)
+        d.id,
+        d.service_id as "serviceId",
+        d.provider,
+        d.status,
+        d.commit_sha as "commitSha",
+        d.branch,
+        d.run_url as "runUrl",
+        d.started_at as "startedAt",
+        d.completed_at as "completedAt",
+        d.pushed_at as "pushedAt",
+        d.ci_started_at as "ciStartedAt",
+        d.ci_completed_at as "ciCompletedAt",
+        d.deploy_started_at as "deployStartedAt",
+        d.deploy_completed_at as "deployCompletedAt",
+        p.id as "projectId",
+        p.name as "projectName",
+        p.display_name as "projectDisplayName"
+      FROM deployments d
+      JOIN services s ON s.id = d.service_id
+      JOIN projects p ON p.id = s.project_id
+      ORDER BY p.id, COALESCE(d.deploy_completed_at, d.completed_at, d.created_at) DESC
+    )
+    SELECT * FROM latest_per_project
+    WHERE status = 'failure'
+    ORDER BY COALESCE("deployCompletedAt", "completedAt") DESC
     LIMIT $1
   `,
     [limit]
