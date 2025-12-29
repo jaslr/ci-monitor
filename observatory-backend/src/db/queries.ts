@@ -658,3 +658,74 @@ export async function deleteService(serviceId: string): Promise<boolean> {
   const result = await query(`DELETE FROM services WHERE id = $1`, [serviceId]);
   return (result.rowCount ?? 0) > 0;
 }
+
+// =============================================================================
+// DoeWah integration queries
+// =============================================================================
+
+// Get failed deployments globally (for DoeWah bot queries)
+export async function getFailedDeployments(limit: number): Promise<GlobalDeployment[]> {
+  const result = await query<GlobalDeployment>(
+    `
+    SELECT
+      d.id,
+      d.service_id as "serviceId",
+      d.provider,
+      d.status,
+      d.commit_sha as "commitSha",
+      d.branch,
+      d.run_url as "runUrl",
+      d.started_at as "startedAt",
+      d.completed_at as "completedAt",
+      d.pushed_at as "pushedAt",
+      d.ci_started_at as "ciStartedAt",
+      d.ci_completed_at as "ciCompletedAt",
+      d.deploy_started_at as "deployStartedAt",
+      d.deploy_completed_at as "deployCompletedAt",
+      p.id as "projectId",
+      p.name as "projectName",
+      p.display_name as "projectDisplayName"
+    FROM deployments d
+    JOIN services s ON s.id = d.service_id
+    JOIN projects p ON p.id = s.project_id
+    WHERE d.status = 'failure'
+    ORDER BY COALESCE(d.deploy_completed_at, d.completed_at, d.created_at) DESC
+    LIMIT $1
+  `,
+    [limit]
+  );
+  return result.rows;
+}
+
+// Get project status summary (for DoeWah bot queries)
+export interface ProjectStatusSummary {
+  healthy: number;
+  degraded: number;
+  down: number;
+  unknown: number;
+}
+
+export async function getProjectStatusSummary(): Promise<ProjectStatusSummary> {
+  const result = await query<{ status: string; count: string }>(`
+    SELECT status, COUNT(DISTINCT project_id)::text as count
+    FROM (
+      SELECT DISTINCT ON (s.project_id)
+        s.project_id,
+        sc.status
+      FROM status_checks sc
+      JOIN services s ON s.id = sc.service_id
+      ORDER BY s.project_id, sc.checked_at DESC
+    ) latest_statuses
+    GROUP BY status
+  `);
+
+  const summary: ProjectStatusSummary = { healthy: 0, degraded: 0, down: 0, unknown: 0 };
+  for (const row of result.rows) {
+    const count = parseInt(row.count, 10);
+    if (row.status === 'healthy') summary.healthy = count;
+    else if (row.status === 'degraded') summary.degraded = count;
+    else if (row.status === 'down') summary.down = count;
+    else summary.unknown += count;
+  }
+  return summary;
+}

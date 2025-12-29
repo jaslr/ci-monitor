@@ -328,3 +328,48 @@ apiRoutes.post('/costs', async (c) => {
     return c.json({ error: 'Failed to create cost entry' }, 500);
   }
 });
+
+// =============================================================================
+// DoeWah bot integration endpoints
+// =============================================================================
+
+// Get the most recent failed deployment
+apiRoutes.get('/deployments/last-failure', async (c) => {
+  try {
+    const failures = await db.getFailedDeployments(1);
+    const deployment = failures[0] || null;
+    return c.json({ deployment });
+  } catch (err) {
+    console.error('Error fetching last failure:', err);
+    return c.json({ error: 'Failed to fetch last failure' }, 500);
+  }
+});
+
+// Get recent failed deployments
+apiRoutes.get('/deployments/failures', async (c) => {
+  try {
+    const limit = parseInt(c.req.query('limit') || '5', 10);
+    const deployments = await db.getFailedDeployments(Math.min(limit, 50));
+    return c.json({ deployments });
+  } catch (err) {
+    console.error('Error fetching failures:', err);
+    return c.json({ error: 'Failed to fetch failures' }, 500);
+  }
+});
+
+// Get overall status summary
+apiRoutes.get('/status/summary', async (c) => {
+  try {
+    const [summary, lastFailures] = await Promise.all([
+      db.getProjectStatusSummary(),
+      db.getFailedDeployments(1),
+    ]);
+    return c.json({
+      ...summary,
+      lastFailure: lastFailures[0] || null,
+    });
+  } catch (err) {
+    console.error('Error fetching status summary:', err);
+    return c.json({ error: 'Failed to fetch status summary' }, 500);
+  }
+});
