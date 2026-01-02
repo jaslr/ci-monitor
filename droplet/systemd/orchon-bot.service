@@ -1,0 +1,20 @@
+[Unit]
+Description=ORCHON Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/orchon/droplet/bot
+Environment="HOME=/root"
+ExecStart=/bin/bash -c 'source /root/orchon/.env && exec /usr/bin/node /root/orchon/droplet/bot/bot.js'
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Give it time to shut down gracefully
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

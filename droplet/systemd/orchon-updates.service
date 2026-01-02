@@ -1,0 +1,21 @@
+[Unit]
+Description=ORCHON OTA Update Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/orchon/droplet/ws
+Environment="HOME=/root"
+Environment="UPDATES_PORT=8406"
+Environment="UPDATES_DIR=/root/orchon/releases"
+ExecStart=/bin/bash -c 'source /root/orchon/.env && exec /usr/bin/node /root/orchon/droplet/ws/updates.js'
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

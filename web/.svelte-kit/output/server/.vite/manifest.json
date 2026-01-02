@@ -1,0 +1,576 @@
+{
+  ".svelte-kit/generated/server/internal.js": {
+    "file": "internal.js",
+    "name": "internal",
+    "src": ".svelte-kit/generated/server/internal.js",
+    "isEntry": true,
+    "imports": [
+      "_internal.js",
+      "_environment.js",
+      "_shared-server.js"
+    ]
+  },
+  "_Icon.js": {
+    "file": "chunks/Icon.js",
+    "name": "Icon",
+    "imports": [
+      "_index2.js"
+    ]
+  },
+  "_arrow-left.js": {
+    "file": "chunks/arrow-left.js",
+    "name": "arrow-left",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_auth.js": {
+    "file": "chunks/auth.js",
+    "name": "auth",
+    "imports": [
+      "_shared-server.js"
+    ]
+  },
+  "_check.js": {
+    "file": "chunks/check.js",
+    "name": "check",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_client.js": {
+    "file": "chunks/client.js",
+    "name": "client",
+    "imports": [
+      "_state.svelte.js",
+      "_exports.js",
+      "_utils.js",
+      "_index.js"
+    ]
+  },
+  "_clock.js": {
+    "file": "chunks/clock.js",
+    "name": "clock",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_cloud.js": {
+    "file": "chunks/cloud.js",
+    "name": "cloud",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_context.js": {
+    "file": "chunks/context.js",
+    "name": "context"
+  },
+  "_environment.js": {
+    "file": "chunks/environment.js",
+    "name": "environment"
+  },
+  "_equality.js": {
+    "file": "chunks/equality.js",
+    "name": "equality"
+  },
+  "_exports.js": {
+    "file": "chunks/exports.js",
+    "name": "exports"
+  },
+  "_external-link.js": {
+    "file": "chunks/external-link.js",
+    "name": "external-link",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_folder-git-2.js": {
+    "file": "chunks/folder-git-2.js",
+    "name": "folder-git-2",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_git-branch.js": {
+    "file": "chunks/git-branch.js",
+    "name": "git-branch",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_github.js": {
+    "file": "chunks/github.js",
+    "name": "github"
+  },
+  "_index.js": {
+    "file": "chunks/index.js",
+    "name": "index",
+    "imports": [
+      "_context.js",
+      "_equality.js"
+    ]
+  },
+  "_index2.js": {
+    "file": "chunks/index2.js",
+    "name": "index",
+    "imports": [
+      "_context.js"
+    ]
+  },
+  "_index3.js": {
+    "file": "chunks/index3.js",
+    "name": "index",
+    "imports": [
+      "_client.js",
+      "_context.js"
+    ]
+  },
+  "_infrastructure.js": {
+    "file": "chunks/infrastructure.js",
+    "name": "infrastructure"
+  },
+  "_internal.js": {
+    "file": "chunks/internal.js",
+    "name": "internal",
+    "imports": [
+      "_index2.js",
+      "_environment.js",
+      "_context.js",
+      "_equality.js",
+      "_shared-server.js"
+    ],
+    "dynamicImports": [
+      "src/hooks.server.ts"
+    ]
+  },
+  "_layers.js": {
+    "file": "chunks/layers.js",
+    "name": "layers",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_loader.js": {
+    "file": "chunks/loader.js",
+    "name": "loader",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_plus.js": {
+    "file": "chunks/plus.js",
+    "name": "plus",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_repos.js": {
+    "file": "chunks/repos.js",
+    "name": "repos"
+  },
+  "_server.js": {
+    "file": "chunks/server.js",
+    "name": "server",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_settings.js": {
+    "file": "chunks/settings.js",
+    "name": "settings",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_shared-server.js": {
+    "file": "chunks/shared-server.js",
+    "name": "shared-server"
+  },
+  "_shared.js": {
+    "file": "chunks/shared.js",
+    "name": "shared",
+    "imports": [
+      "_utils.js"
+    ]
+  },
+  "_state.svelte.js": {
+    "file": "chunks/state.svelte.js",
+    "name": "state.svelte",
+    "imports": [
+      "_context.js"
+    ]
+  },
+  "_trash-2.js": {
+    "file": "chunks/trash-2.js",
+    "name": "trash-2",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_triangle-alert.js": {
+    "file": "chunks/triangle-alert.js",
+    "name": "triangle-alert",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "_utils.js": {
+    "file": "chunks/utils.js",
+    "name": "utils"
+  },
+  "_x.js": {
+    "file": "chunks/x.js",
+    "name": "x",
+    "imports": [
+      "_index2.js",
+      "_Icon.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js": {
+    "file": "remote-entry.js",
+    "name": "remote-entry",
+    "src": "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js",
+    "isEntry": true,
+    "imports": [
+      "_shared.js",
+      "_environment.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte": {
+    "file": "entries/fallbacks/error.svelte.js",
+    "name": "entries/fallbacks/error.svelte",
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte",
+    "isEntry": true,
+    "imports": [
+      "_context.js",
+      "_index3.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
+    "file": "index.js",
+    "name": "index",
+    "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js",
+    "isEntry": true,
+    "imports": [
+      "_environment.js",
+      "_shared.js",
+      "_exports.js",
+      "_utils.js",
+      "_index.js",
+      "_shared-server.js",
+      "_internal.js"
+    ]
+  },
+  "src/hooks.server.ts": {
+    "file": "chunks/hooks.server.js",
+    "name": "hooks.server",
+    "src": "src/hooks.server.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth.js"
+    ]
+  },
+  "src/routes/+layout.server.ts": {
+    "file": "entries/pages/_layout.server.ts.js",
+    "name": "entries/pages/_layout.server.ts",
+    "src": "src/routes/+layout.server.ts",
+    "isEntry": true
+  },
+  "src/routes/+layout.svelte": {
+    "file": "entries/pages/_layout.svelte.js",
+    "name": "entries/pages/_layout.svelte",
+    "src": "src/routes/+layout.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_index3.js",
+      "_Icon.js",
+      "_layers.js",
+      "_cloud.js",
+      "_settings.js",
+      "_context.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_layout.Cuww13nZ.css"
+    ]
+  },
+  "src/routes/+page.server.ts": {
+    "file": "entries/pages/_page.server.ts.js",
+    "name": "entries/pages/_page.server.ts",
+    "src": "src/routes/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repos.js",
+      "_github.js",
+      "_infrastructure.js",
+      "_shared-server.js"
+    ]
+  },
+  "src/routes/+page.svelte": {
+    "file": "entries/pages/_page.svelte.js",
+    "name": "entries/pages/_page.svelte",
+    "src": "src/routes/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_cloud.js",
+      "_Icon.js",
+      "_loader.js",
+      "_external-link.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/admin/+layout.svelte": {
+    "file": "entries/pages/admin/_layout.svelte.js",
+    "name": "entries/pages/admin/_layout.svelte",
+    "src": "src/routes/admin/+layout.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_index3.js",
+      "_arrow-left.js",
+      "_Icon.js",
+      "_folder-git-2.js",
+      "_settings.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/admin/+page.server.ts": {
+    "file": "entries/pages/admin/_page.server.ts.js",
+    "name": "entries/pages/admin/_page.server.ts",
+    "src": "src/routes/admin/+page.server.ts",
+    "isEntry": true
+  },
+  "src/routes/admin/+page.svelte": {
+    "file": "entries/pages/admin/_page.svelte.js",
+    "name": "entries/pages/admin/_page.svelte",
+    "src": "src/routes/admin/+page.svelte",
+    "isEntry": true
+  },
+  "src/routes/admin/media/+page.server.ts": {
+    "file": "entries/pages/admin/media/_page.server.ts.js",
+    "name": "entries/pages/admin/media/_page.server.ts",
+    "src": "src/routes/admin/media/+page.server.ts",
+    "isEntry": true
+  },
+  "src/routes/admin/media/+page.svelte": {
+    "file": "entries/pages/admin/media/_page.svelte.js",
+    "name": "entries/pages/admin/media/_page.svelte",
+    "src": "src/routes/admin/media/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_check.js",
+      "_x.js",
+      "_server.js",
+      "_trash-2.js",
+      "_Icon.js",
+      "_layers.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/admin/projects/+page.server.ts": {
+    "file": "entries/pages/admin/projects/_page.server.ts.js",
+    "name": "entries/pages/admin/projects/_page.server.ts",
+    "src": "src/routes/admin/projects/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repos.js"
+    ]
+  },
+  "src/routes/admin/projects/+page.svelte": {
+    "file": "entries/pages/admin/projects/_page.svelte.js",
+    "name": "entries/pages/admin/projects/_page.svelte",
+    "src": "src/routes/admin/projects/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_Icon.js",
+      "_check.js",
+      "_x.js",
+      "_plus.js",
+      "_trash-2.js",
+      "_folder-git-2.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/admin/repos/+page.server.ts": {
+    "file": "entries/pages/admin/repos/_page.server.ts.js",
+    "name": "entries/pages/admin/repos/_page.server.ts",
+    "src": "src/routes/admin/repos/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repos.js",
+      "_infrastructure.js",
+      "_shared-server.js"
+    ]
+  },
+  "src/routes/admin/repos/+page.svelte": {
+    "file": "entries/pages/admin/repos/_page.svelte.js",
+    "name": "entries/pages/admin/repos/_page.svelte",
+    "src": "src/routes/admin/repos/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_arrow-left.js",
+      "_external-link.js",
+      "_check.js",
+      "_x.js",
+      "_Icon.js",
+      "_clock.js",
+      "_git-branch.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/api/logos/[...path]/+server.ts": {
+    "file": "entries/endpoints/api/logos/_...path_/_server.ts.js",
+    "name": "entries/endpoints/api/logos/_...path_/_server.ts",
+    "src": "src/routes/api/logos/[...path]/+server.ts",
+    "isEntry": true
+  },
+  "src/routes/api/scan/+server.ts": {
+    "file": "entries/endpoints/api/scan/_server.ts.js",
+    "name": "entries/endpoints/api/scan/_server.ts",
+    "src": "src/routes/api/scan/+server.ts",
+    "isEntry": true
+  },
+  "src/routes/deployments/+page.server.ts": {
+    "file": "entries/pages/deployments/_page.server.ts.js",
+    "name": "entries/pages/deployments/_page.server.ts",
+    "src": "src/routes/deployments/+page.server.ts",
+    "isEntry": true
+  },
+  "src/routes/deployments/+page.svelte": {
+    "file": "entries/pages/deployments/_page.svelte.js",
+    "name": "entries/pages/deployments/_page.svelte",
+    "src": "src/routes/deployments/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_Icon.js",
+      "_x.js",
+      "_cloud.js",
+      "_loader.js",
+      "_git-branch.js",
+      "_external-link.js",
+      "_clock.js",
+      "_context.js"
+    ]
+  },
+  "src/routes/ecosystem/+page.svelte": {
+    "file": "entries/pages/ecosystem/_page.svelte.js",
+    "name": "entries/pages/ecosystem/_page.svelte",
+    "src": "src/routes/ecosystem/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_infrastructure.js",
+      "_Icon.js",
+      "_triangle-alert.js",
+      "_cloud.js",
+      "_git-branch.js",
+      "_server.js",
+      "_context.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.CdfxE40d.css"
+    ]
+  },
+  "src/routes/login/+page.server.ts": {
+    "file": "entries/pages/login/_page.server.ts.js",
+    "name": "entries/pages/login/_page.server.ts",
+    "src": "src/routes/login/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_auth.js"
+    ]
+  },
+  "src/routes/login/+page.svelte": {
+    "file": "entries/pages/login/_page.svelte.js",
+    "name": "entries/pages/login/_page.svelte",
+    "src": "src/routes/login/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_context.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_Icon.js"
+    ]
+  },
+  "src/routes/logout/+page.server.ts": {
+    "file": "entries/pages/logout/_page.server.ts.js",
+    "name": "entries/pages/logout/_page.server.ts",
+    "src": "src/routes/logout/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_auth.js"
+    ]
+  },
+  "src/routes/projects/+page.server.ts": {
+    "file": "entries/pages/projects/_page.server.ts.js",
+    "name": "entries/pages/projects/_page.server.ts",
+    "src": "src/routes/projects/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repos.js",
+      "_github.js",
+      "_infrastructure.js",
+      "_shared-server.js"
+    ]
+  },
+  "src/routes/projects/+page.svelte": {
+    "file": "entries/pages/projects/_page.svelte.js",
+    "name": "entries/pages/projects/_page.svelte",
+    "src": "src/routes/projects/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index2.js",
+      "_infrastructure.js",
+      "_client.js",
+      "_exports.js",
+      "_utils.js",
+      "_state.svelte.js",
+      "_Icon.js",
+      "_plus.js",
+      "_server.js",
+      "_triangle-alert.js",
+      "_git-branch.js",
+      "_cloud.js",
+      "_external-link.js",
+      "_context.js",
+      "_layers.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.CXPR0kzH.css"
+    ]
+  }
+}

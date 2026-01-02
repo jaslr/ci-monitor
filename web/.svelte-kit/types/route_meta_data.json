@@ -1,0 +1,49 @@
+{
+	"/": [
+		"src/routes/+page.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin": [
+		"src/routes/admin/+page.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin/media": [
+		"src/routes/admin/media/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin/projects": [
+		"src/routes/admin/projects/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin/repos": [
+		"src/routes/admin/repos/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/api/logos/[...path]": [
+		"src/routes/api/logos/[...path]/+server.ts"
+	],
+	"/api/scan": [
+		"src/routes/api/scan/+server.ts"
+	],
+	"/deployments": [
+		"src/routes/deployments/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/ecosystem": [
+		"src/routes/+layout.server.ts"
+	],
+	"/login": [
+		"src/routes/login/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/logout": [
+		"src/routes/logout/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/projects": [
+		"src/routes/projects/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	]
+}

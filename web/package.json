@@ -1,0 +1,32 @@
+{
+	"name": "orchon-web",
+	"description": "ORCHON Web Dashboard - SvelteKit frontend",
+	"private": true,
+	"version": "0.0.91",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev --port 4573",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"lint": "prettier --check .",
+		"lint:fix": "prettier --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.4",
+		"@sveltejs/kit": "^2.49.1",
+		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@tailwindcss/vite": "^4.1.18",
+		"@types/node": "^25.0.3",
+		"svelte": "^5.45.6",
+		"svelte-check": "^4.3.4",
+		"tailwindcss": "^4.1.18",
+		"typescript": "^5.9.3",
+		"vite": "^7.2.6"
+	},
+	"dependencies": {
+		"@lucide/svelte": "^0.562.0"
+	}
+}

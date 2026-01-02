@@ -1,249 +1,235 @@
-# Claude Instructions for Infrastructure Observatory
+# ORCHON - Infrastructure Observatory & DevOps Control Plane
 
 ## Project Overview
 
-**ORCHON** (Infrastructure Observatory) - a comprehensive platform for monitoring CI/CD pipelines, infrastructure health, and service integrations across multiple projects and accounts.
+**ORCHON** is a comprehensive infrastructure monitoring and DevOps control platform with multiple interfaces:
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Web Dashboard | `web/` | SvelteKit frontend on Cloudflare Pages |
+| Backend API | `backend/` | Hono + Postgres on Fly.io |
+| Mobile App | `app/` | Flutter app with OTA updates |
+| Droplet Services | `droplet/` | Bot, WebSocket, OTA server on DigitalOcean |
 
 ---
 
-## Integration: ORCHON ↔ DOA
+## Monorepo Structure
 
-### MOU (Memorandum of Understanding)
-
-| Project | Role | Consumes | Provides |
-|---------|------|----------|----------|
-| **ORCHON** | Infrastructure Observatory | GitHub webhooks, provider APIs | Deployment status API |
-| **DOA** | DevOps Control Plane | ORCHON deployment data | Fix actions via Claude threads |
-
-**Data Flow:**
 ```
-GitHub/Cloudflare/Fly.io → ORCHON (monitors) → DOA (displays + acts)
-                              ↑                      ↓
-                         Webhooks              Claude Code (fixes)
+orchon/
+├── web/                    # SvelteKit frontend (Cloudflare Pages)
+│   ├── src/
+│   ├── package.json
+│   └── wrangler.toml
+├── backend/                # Hono API (Fly.io)
+│   ├── src/
+│   ├── migrations/
+│   ├── fly.toml
+│   └── Dockerfile
+├── app/                    # Flutter mobile app
+│   ├── lib/
+│   ├── android/
+│   └── pubspec.yaml
+├── droplet/                # DigitalOcean Droplet services
+│   ├── bot/                # Telegram bot
+│   ├── ws/                 # WebSocket + OTA servers
+│   ├── orchestrator/       # NLP routing
+│   ├── contexts/           # Project context files
+│   └── systemd/            # Service definitions
+└── scripts/                # Deployment scripts
 ```
 
-### Handshake Configuration
+---
 
-| ORCHON Side | DOA Side | Notes |
-|-------------|----------|-------|
-| `API_SECRET` (Fly.io secret) | `ORCHON_API_SECRET` (dart-define) | **Must match** |
-| Backend URL | `ORCHON_URL` config | `https://observatory-backend.fly.dev` |
+## Infrastructure Layout
 
-**To update the shared secret:**
-1. Generate new secret: `openssl rand -hex 32`
-2. ORCHON: `fly secrets set API_SECRET=<new> -a observatory-backend`
-3. DOA: Rebuild Flutter app with `--dart-define=ORCHON_API_SECRET=<new>`
-
-### API Endpoints Provided to DOA
-
-| Endpoint | Purpose | Auth |
-|----------|---------|------|
-| `GET /api/deployments/recent?limit=N` | Recent deployments across all projects | Bearer token |
-| `GET /api/deployments/failures?limit=N` | Failed deployments only | Bearer token |
-| `GET /api/deployments/:id` | Single deployment details | Bearer token |
-| `GET /api/status/summary` | Overall health summary | Bearer token |
-
-### Files to Update When Changing Integration
-
-**ORCHON:**
-- `observatory-backend/.env.example` - Document API_SECRET
-- `observatory-backend/src/config/env.ts` - Secret validation
-- `observatory-backend/src/routes/api.ts` - Deployment endpoints
-- `observatory-backend/src/db/queries.ts` - Deployment data structure
-
-**DOA:**
-- `app/lib/core/config.dart` - ORCHON URL + secret config
-- `app/lib/core/orchon/orchon_service.dart` - API client + endpoints
-- `app/lib/models/deployment.dart` - Data model (must match ORCHON schema)
+| Component | Platform | URL/Port | Purpose |
+|-----------|----------|----------|---------|
+| Web Dashboard | Cloudflare Pages | https://orchon.pages.dev | Status UI |
+| Backend API | Fly.io | https://observatory-backend.fly.dev | REST API + webhooks |
+| WebSocket | Droplet :8405 | ws://209.38.85.244:8405 | Real-time Claude threads |
+| OTA Server | Droplet :8406 | http://209.38.85.244:8406 | App updates |
+| Telegram Bot | Droplet | @orchon_bot | Chat control |
+| Database | Fly.io Postgres | Internal | Deployment data |
 
 ---
 
-## Infrastructure Choices
+## Deployment Commands
 
-| Component | Platform | Why |
-|-----------|----------|-----|
-| Frontend | Cloudflare Pages | Free, global CDN, direct wrangler deploys |
-| Backend | Fly.io (`observatory-backend`) | Free tier, Postgres included, auto-sleep |
-| Database | Fly.io Postgres | Included with Fly, easy migrations |
-| DOA Backend | DigitalOcean Droplet | Persistent SSH, Claude Code sessions |
-| DOA App | Self-hosted OTA | Bypass Play Store, instant updates |
+### IMPORTANT: Git Push ≠ Production Deploy
 
-**Why this split?**
-- ORCHON = monitoring (stateless queries, can auto-sleep)
-- DOA = actions (needs persistent SSH for Claude Code)
+| Action | What it does |
+|--------|--------------|
+| `git push` | Version control backup to GitHub |
+| `npm run deploy:web` | Build + deploy frontend to Cloudflare |
+| `npm run deploy:backend` | Deploy backend to Fly.io |
+| `npm run deploy:droplet` | Pull + restart services on droplet |
+| `npm run app:ship` | Build + publish Flutter app to OTA |
 
----
-
-## Development Guidelines
-
-### Use Beads for Issue Tracking
+### Quick Deploy (All Components)
 
 ```bash
-bd ready           # Check what's ready to work on
-bd create "..."    # Create new issues
-bd update <id>     # Update status
-bd close <id>      # Complete work
+git push && npm run deploy:all
 ```
 
-Always commit `.beads/issues.jsonl` with related code changes.
+### Web Dashboard (Cloudflare Pages)
 
-### Code Style
+```bash
+cd web && npm run build && wrangler pages deploy .svelte-kit/cloudflare --project-name=orchon
+```
 
-- **No emojis** in UI - use Lucide icons instead
-- **Mobile-first** responsive design
-- **Local-first** architecture - minimize server round-trips
-- **Background data fetching** - no UI refresh flashing
+### Backend API (Fly.io)
+
+```bash
+cd backend && fly deploy --now
+```
+
+### Droplet Services
+
+```bash
+ssh root@209.38.85.244 "cd /root/orchon && git pull && systemctl restart orchon-bot orchon-ws orchon-updates"
+```
+
+### Flutter App (OTA)
+
+```bash
+# 1. Bump version in app/pubspec.yaml
+# 2. Build APK
+cd app && flutter build apk --release \
+  --dart-define=ORCHON_API_SECRET=$(grep API_SECRET ../.env | cut -d= -f2) \
+  --dart-define=WS_URL=ws://209.38.85.244:8405
+
+# 3. Publish to OTA server
+cd .. && ./droplet/scripts/publish-release.sh release
+```
+
+**First-time install:** http://209.38.85.244:8406/download
+
+**Check OTA version:** `curl http://209.38.85.244:8406/version`
+
+---
+
+## Configuration
+
+### Shared Secret (API Authentication)
+
+The `API_SECRET` must match between backend and app:
+
+```bash
+# Generate new secret
+openssl rand -hex 32
+
+# Update backend (Fly.io)
+fly secrets set API_SECRET=<new> -a observatory-backend
+
+# Rebuild app with new secret
+flutter build apk --release --dart-define=ORCHON_API_SECRET=<new>
+```
+
+### Environment Files
+
+| Location | Purpose |
+|----------|---------|
+| `.env` | Root config (droplet IP, secrets) |
+| `backend/.env` | Fly.io secrets (DATABASE_URL, API_SECRET) |
+| `/root/orchon/.env` | Droplet runtime config |
+
+---
+
+## Development
+
+### Local Development
+
+```bash
+# Web frontend (port 4573)
+npm run dev:web
+
+# Backend (requires DATABASE_URL)
+npm run dev:backend
+
+# Flutter app
+cd app && flutter run
+```
 
 ### Tech Stack
 
-- SvelteKit 2.x + Svelte 5 (use runes: `$state`, `$derived`, `$effect`)
-- Tailwind CSS 4.x
-- Consider Skeleton UI for component library
-- Lucide for icons
+| Component | Stack |
+|-----------|-------|
+| Web | SvelteKit 2.x + Svelte 5 + Tailwind 4 |
+| Backend | Hono + TypeScript + Postgres |
+| App | Flutter + Riverpod |
+| Bot | Node.js |
 
-### Architecture Decisions
+### Code Style
 
-1. **Read-only Phase 1**: Display infrastructure status, no mutations
-2. **CRUD Phase 2**: Add ability to trigger actions (retries, deployments)
-3. **Meta-monitoring**: Deploy watcher on separate cloud (AWS/GCP/Azure free tier)
+- **No emojis** in UI - use Lucide icons
+- **Mobile-first** responsive design
+- Use Svelte 5 runes: `$state`, `$derived`, `$effect`
 
-### Infrastructure Services to Support
+---
 
-- **CI/CD**: GitHub Actions
-- **Hosting**: Cloudflare Pages, Fly.io, Vercel, Netlify
-- **Database**: Supabase, PlanetScale, Neon
-- **DNS**: Cloudflare, Ventra IP, DNS Made Easy
-- **Storage**: AWS S3, Cloudflare R2
-- **Auth**: Supabase Auth, Auth0, Clerk
-- **Analytics**: Various
-- **Error Tracking**: Sentry
+## API Endpoints
 
-### Account Mapping
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/projects` | List monitored projects |
+| `GET /api/deployments/recent?limit=N` | Recent deployments |
+| `GET /api/deployments/failures?limit=N` | Failed deployments |
+| `GET /api/deployments/:id` | Single deployment |
+| `GET /api/status/summary` | Health overview |
+| `POST /webhooks/github` | GitHub webhook receiver |
 
-Track which GitHub account owns each repo:
-- jvp-ux (simulations)
-- jaslr (Ladderbox, Junipa)
-- stickyjason (misc)
-- Plus client and hobby projects
+All API endpoints require `Authorization: Bearer <API_SECRET>`.
 
-### Key Features to Build
+---
 
-1. CI status dashboard (current)
-2. Infrastructure topology diagrams (live, animated during deploys)
-3. Service health checks (DNS, domains, MX records)
-4. Stack detection (framework, CSS, tools)
-5. Account/identity mapping
-6. Ecosystem overview diagram
+## Droplet Services
 
-### Ports
+### Systemd Services
 
-| Service | Port | Description |
-|---------|------|-------------|
-| SvelteKit Dev | 4573 | Main app (400 above standard 4173) |
-| PocketBase | 4617 | Local DB + Admin UI at /_/ |
+| Service | Description |
+|---------|-------------|
+| `orchon-bot` | Telegram bot |
+| `orchon-ws` | WebSocket server |
+| `orchon-updates` | OTA update server |
 
-### Commands
+### Service Management
 
 ```bash
-npm run dev        # Start dev server on port 4573
-npm run dev:all    # Start both SvelteKit + PocketBase
-npm run pocketbase # Start PocketBase only (port 4617)
-npm run ports      # List all listening ports
-npm run ports:kill # Kill observatory ports
-npm run build      # Production build
-npm run check      # Type checking
-bd ready           # Check beads issues
+# Check status
+systemctl status orchon-bot orchon-ws orchon-updates
+
+# View logs
+journalctl -u orchon-bot -f
+
+# Restart all
+systemctl restart orchon-bot orchon-ws orchon-updates
 ```
 
-### Quick Commands
+---
 
-- **"get it live"** = Full deployment workflow (see below)
+## Adding New Integrations
 
-### Get It Live (Cloudflare Pages Deployment)
+Follow the pattern in `droplet/orchestrator/index.js`:
 
-When asked to "get it live" for this project:
+1. Add config constants at top
+2. Add API query function
+3. Add `execute*` function(s) for actions
+4. Add detection patterns in `detectAction()`
+5. Add cases in `executeAction()` switch
 
-1. **Check for uncommitted changes first**:
-   ```bash
-   git status --porcelain
-   ```
-2. If there are uncommitted files, commit them with a descriptive message
-3. **Bump version**:
-   ```bash
-   npm version patch --no-git-tag-version
-   ```
-4. **Commit the version bump**:
-   ```bash
-   git add -A && git commit -m "v0.x.x: <description>"
-   ```
-5. **Push to GitHub** (version control/backup):
-   ```bash
-   git push
-   ```
-6. **Deploy to Cloudflare Pages (production)**:
-   ```bash
-   npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=orchon --branch=main
-   ```
-   Production URL: https://orchon.pages.dev
+---
 
-### Task Completion Protocol
+## Task Completion Protocol
 
-**IMPORTANT: ALWAYS deploy after completing any task. Don't wait to be asked - just get it live.**
+When completing any task:
 
-When completing a task:
-1. **Commit changes** with a descriptive message
-2. **Bump version**: `npm version patch --no-git-tag-version`
-3. **Commit version bump**: `git add -A && git commit -m "v0.x.x: <description>"`
-4. **Push to GitHub**: `git push`
-5. **Deploy backend** (if backend changes):
-   ```bash
-   cd observatory-backend && fly deploy --now
-   ```
-6. **Run migrations** (if database changes):
-   ```bash
-   fly ssh console -a observatory-backend -C 'node -e "
-   const { Pool } = require(\"pg\");
-   const fs = require(\"fs\");
-   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-   const sql = fs.readFileSync(\"migrations/<migration_file>.sql\", \"utf8\");
-   pool.query(sql).then(() => { console.log(\"Migration successful\"); pool.end(); }).catch(e => { console.error(\"Migration failed:\", e.message); process.exit(1); });
-   "'
-   ```
-7. **Deploy frontend**:
-   ```bash
-   npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=orchon --branch=main
-   ```
+1. **Commit changes** with descriptive message
+2. **Push to GitHub**: `git push`
+3. **Deploy affected components**:
+   - Web changes: `npm run deploy:web`
+   - Backend changes: `npm run deploy:backend`
+   - Droplet changes: `npm run deploy:droplet`
+   - App changes: Bump version + `npm run app:ship`
 
-### Deployment (Forked Workflow - No GitHub Actions)
-
-This project uses a **forked deployment workflow**:
-
-```
-Your Machine
-    │
-    ├──► git push     →  GitHub (version control, backup)
-    │
-    └──► wrangler     →  Cloudflare Pages (production)
-```
-
-**Quick commands:**
-```bash
-npm version patch --no-git-tag-version                                                            # Bump version
-git add -A && git commit -m "v0.x.x: ..."                                                         # Commit
-git push                                                                                           # Push to GitHub
-npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name=orchon --branch=main  # Deploy to production
-```
-
-**Production URL:** https://orchon.pages.dev
-
-**Why forked?**
-- Deploys directly via Wrangler - no GitHub Actions minutes consumed
-- Build errors appear locally in your terminal
-- Faster than waiting for CI runner to spin up
-- GitHub is for version control/backup, not deployment triggers
-
-### VS Code Tasks
-
-- **Run Orchon Local (with PROD connection)** - Runs dev server connecting to production backend
-- **Check: Active Ports** - Shows port usage
-- **Deploy: Get It Live** - Full deployment
+**ALWAYS deploy after completing tasks. Don't wait to be asked.**
