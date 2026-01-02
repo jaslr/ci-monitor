@@ -50,7 +50,17 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization');
 
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // PROTECTED: Even the landing page requires auth
+  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html' || req.url?.startsWith('/?'))) {
+    if (!isAuthorized(req)) return unauthorized(res);
+
     // Serve HTML download page
     const versionFile = path.join(UPDATES_DIR, 'version.json');
     let version = { version: 'No release', apkFile: 'N/A', releaseDate: 'N/A' };
@@ -109,7 +119,9 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
   } else if (req.method === 'GET' && req.url === '/version') {
-    // Return current version info
+    // PROTECTED: Return current version info
+    if (!isAuthorized(req)) return unauthorized(res);
+
     const versionFile = path.join(UPDATES_DIR, 'version.json');
     if (fs.existsSync(versionFile)) {
       const version = JSON.parse(fs.readFileSync(versionFile, 'utf8'));

@@ -125,8 +125,14 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
+      final headers = <String, String>{};
+      if (AppConfig.orchonApiSecret.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${AppConfig.orchonApiSecret}';
+      }
+
       final response = await http.get(
         Uri.parse('${AppConfig.updateUrl}/version'),
+        headers: headers,
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
