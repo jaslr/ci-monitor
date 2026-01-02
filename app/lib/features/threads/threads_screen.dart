@@ -58,7 +58,7 @@ class _ThreadsScreenState extends ConsumerState<ThreadsScreen> {
         title: Row(
           children: [
             Text(
-              'DOEWAH',
+              'ORCHON',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,

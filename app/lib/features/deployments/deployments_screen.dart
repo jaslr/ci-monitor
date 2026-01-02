@@ -73,7 +73,7 @@ class _DeploymentsScreenState extends ConsumerState<DeploymentsScreen> {
             ),
             const SizedBox(width: 10),
             Text(
-              'DOEWAH',
+              'ORCHON',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,

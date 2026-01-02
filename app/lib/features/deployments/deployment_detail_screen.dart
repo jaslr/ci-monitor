@@ -79,7 +79,7 @@ class _DeploymentDetailScreenState extends ConsumerState<DeploymentDetailScreen>
         title: Row(
           children: [
             Text(
-              'DOEWAH',
+              'ORCHON',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,

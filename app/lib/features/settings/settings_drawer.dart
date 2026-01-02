@@ -180,7 +180,7 @@ class SettingsDrawer extends ConsumerWidget {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Configure Doewah',
+                    'Configure ORCHON',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,

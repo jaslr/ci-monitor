@@ -44,7 +44,7 @@ class TerminalConfig {
     ProjectConfig(name: 'Brontiq', directory: '/root/projects/brontiq'),
     ProjectConfig(name: 'ORCHON', directory: '/root/projects/orchon'),
     ProjectConfig(name: 'LittleListOfLights', directory: '/root/projects/littlelistoflights'),
-    ProjectConfig(name: 'Doewah', directory: '/root/doewah'),
+    ProjectConfig(name: 'ORCHON', directory: '/root/orchon'),
     ProjectConfig(name: 'Agent Deck', directory: '/root/agent-deck'),
   ];
 
@@ -437,7 +437,7 @@ To add a new key:
 3. Base64 encode private key:
    base64 -w0 id_ed25519 > /root/termux-key.b64
 4. Restart update server:
-   systemctl restart doewah-updates''',
+   systemctl restart orchon-updates''',
             icon: Icons.vpn_key,
           ),
           const SizedBox(height: 32),

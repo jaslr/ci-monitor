@@ -15,7 +15,7 @@ Future<void> logError(String error) async {
 
   try {
     final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/doewah_crash.log');
+    final file = File('${dir.path}/orchon_crash.log');
     await file.writeAsString('$entry\n', mode: FileMode.append);
   } catch (e) {
     // Can't write to file, just keep in memory
@@ -31,16 +31,16 @@ void main() {
     // Don't crash - just log
   };
 
-  runApp(const ProviderScope(child: DoewahApp()));
+  runApp(const ProviderScope(child: OrchonApp()));
 }
 
-class DoewahApp extends StatelessWidget {
-  const DoewahApp({super.key});
+class OrchonApp extends StatelessWidget {
+  const OrchonApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Doewah',
+      title: 'ORCHON',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -85,7 +85,7 @@ class ErrorScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
       appBar: AppBar(
-        title: const Text('Doewah - Error'),
+        title: const Text('ORCHON - Error'),
         backgroundColor: Colors.red[900],
       ),
       body: Padding(
