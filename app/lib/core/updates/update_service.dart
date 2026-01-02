@@ -193,6 +193,12 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
     try {
       final client = http.Client();
       final request = http.Request('GET', Uri.parse('${AppConfig.updateUrl}/download'));
+
+      // Add auth header if API secret is configured
+      if (AppConfig.orchonApiSecret.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer ${AppConfig.orchonApiSecret}';
+      }
+
       final response = await client.send(request);
 
       if (response.statusCode != 200) {
