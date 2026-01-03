@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/auth/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -11,11 +13,30 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = 'v${info.version}';
+      });
+    }
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -24,6 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final success = await ref.read(authProvider.notifier).signIn(
       _emailController.text,
+      _passwordController.text,
     );
 
     if (!success && mounted) {
@@ -53,18 +75,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo/Icon
-                  Container(
+                  // ORCHON Logo
+                  SizedBox(
                     width: 120,
                     height: 120,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: const Icon(
-                      Icons.hub_outlined,
-                      size: 60,
-                      color: Color(0xFF6366F1),
+                    child: SvgPicture.asset(
+                      'assets/icon.svg',
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF6366F1),
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -79,17 +99,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       letterSpacing: 4,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Infrastructure Observatory',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
-                  ),
                   const SizedBox(height: 48),
 
-                  // Email input
+                  // Email input - no rounded corners
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -99,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: TextStyle(color: Colors.grey[400]),
-                      hintText: 'Enter your authorized email',
+                      hintText: 'Enter your email',
                       hintStyle: TextStyle(color: Colors.grey[600]),
                       prefixIcon: Icon(
                         Icons.email_outlined,
@@ -107,22 +119,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       filled: true,
                       fillColor: const Color(0xFF1F2937),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
                         borderSide: BorderSide.none,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
                           color: Color(0xFF6366F1),
                           width: 2,
                         ),
                       ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
+                      errorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
                           color: Colors.red,
                           width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
+                          color: Colors.red,
+                          width: 2,
                         ),
                       ),
                     ),
@@ -135,11 +154,74 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password input - no rounded corners
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    enabled: !isChecking,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      hintText: 'Enter your password',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      prefixIcon: Icon(
+                        Icons.lock_outlined,
+                        color: Colors.grey[400],
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.grey[400],
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFF1F2937),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
+                          color: Color(0xFF6366F1),
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
+                          color: Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      focusedErrorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
+                          color: Colors.red,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
                     onFieldSubmitted: (_) => _handleSignIn(),
                   ),
                   const SizedBox(height: 24),
 
-                  // Sign in button
+                  // Sign in button - no rounded corners
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -149,8 +231,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         backgroundColor: const Color(0xFF6366F1),
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: const Color(0xFF6366F1).withOpacity(0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
                         ),
                       ),
                       child: isChecking
@@ -171,16 +253,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Help text
+                  const SizedBox(height: 32),
+                  // Version footer
                   Text(
-                    'Access is restricted to authorized users only',
+                    _version,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: Colors.grey[600],
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),

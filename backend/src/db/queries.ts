@@ -111,6 +111,7 @@ export interface GlobalDeployment extends Deployment {
   projectId: string;
   projectName: string;
   projectDisplayName: string;
+  owner: string;
 }
 
 // Get recent deployments across ALL projects (for the live deployment log)
@@ -134,7 +135,8 @@ export async function getGlobalRecentDeployments(limit: number): Promise<GlobalD
       d.deploy_completed_at as "deployCompletedAt",
       p.id as "projectId",
       p.name as "projectName",
-      p.display_name as "projectDisplayName"
+      p.display_name as "projectDisplayName",
+      p.owner
     FROM deployments d
     JOIN services s ON s.id = d.service_id
     JOIN projects p ON p.id = s.project_id

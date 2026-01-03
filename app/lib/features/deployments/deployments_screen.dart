@@ -341,10 +341,7 @@ class _DeploymentsScreenState extends ConsumerState<DeploymentsScreen> {
     // Filter deployments by owner if selected
     final filteredDeployments = selectedOwner != null
         ? state.deployments.where((d) =>
-            d.projectName?.toLowerCase().contains(selectedOwner.toLowerCase()) == true ||
-            d.projectDisplayName?.toLowerCase().contains(selectedOwner.toLowerCase()) == true ||
-            // Check if projectId matches owner pattern (e.g., "junipa-demo" for owner "junipa")
-            d.projectId?.toLowerCase().startsWith(selectedOwner.toLowerCase()) == true
+            d.owner?.toLowerCase() == selectedOwner.toLowerCase()
           ).toList()
         : state.deployments;
 

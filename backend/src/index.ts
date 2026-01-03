@@ -54,9 +54,10 @@ app.use(
 app.route('/health', healthRoutes);
 app.route('/webhooks', webhookRoutes);
 
-// Auth routes - /auth/verify is public, /auth/users/* requires API secret
+// Auth routes - /auth/verify is public, admin endpoints require API secret
 app.use('/auth/users', apiAuth);
 app.use('/auth/users/*', apiAuth);
+app.use('/auth/set-password', apiAuth);
 app.route('/auth', authRoutes);
 
 // Protected routes (require API secret)

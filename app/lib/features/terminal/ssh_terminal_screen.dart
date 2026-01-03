@@ -57,10 +57,13 @@ class _SshTerminalScreenState extends ConsumerState<SshTerminalScreen> {
     try {
       terminal.write('Connecting to ${config.dropletIp}...\r\n');
 
-      // Get SSH key from server
+      // Get SSH key from server (requires auth)
       terminal.write('Fetching SSH key from update server...\r\n');
       final keyUrl = 'http://${config.dropletIp}:8406/termux-key';
-      final keyResponse = await http.get(Uri.parse(keyUrl));
+      final keyResponse = await http.get(
+        Uri.parse(keyUrl),
+        headers: {'Authorization': 'Bearer ${AppConfig.orchonApiSecret}'},
+      );
 
       if (keyResponse.statusCode != 200) {
         throw Exception('Failed to fetch SSH key: ${keyResponse.statusCode}');

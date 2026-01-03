@@ -12,6 +12,7 @@ class Deployment {
   final String projectId;
   final String projectName;
   final String projectDisplayName;
+  final String? owner;
 
   Deployment({
     required this.id,
@@ -26,6 +27,7 @@ class Deployment {
     required this.projectId,
     required this.projectName,
     required this.projectDisplayName,
+    this.owner,
   });
 
   factory Deployment.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class Deployment {
       projectId: json['projectId'] as String? ?? '',
       projectName: json['projectName'] as String? ?? '',
       projectDisplayName: json['projectDisplayName'] as String? ?? json['projectName'] as String? ?? '',
+      owner: json['owner'] as String?,
     );
   }
 
@@ -63,6 +66,7 @@ class Deployment {
       'projectId': projectId,
       'projectName': projectName,
       'projectDisplayName': projectDisplayName,
+      'owner': owner,
     };
   }
 

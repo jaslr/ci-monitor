@@ -60,6 +60,7 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   static const _emailKey = 'auth_email';
+  static const _passwordKey = 'auth_password';
   static const _userNameKey = 'auth_user_name';
 
   AuthNotifier() : super(const AuthState()) {
@@ -71,10 +72,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final email = prefs.getString(_emailKey);
+      final password = prefs.getString(_passwordKey);
 
-      if (email != null && email.isNotEmpty) {
+      if (email != null && email.isNotEmpty && password != null && password.isNotEmpty) {
         // Re-verify with backend on each startup
-        await signIn(email, silent: true);
+        await signIn(email, password, silent: true);
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
@@ -84,8 +86,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Sign in with email - verifies against backend database
-  Future<bool> signIn(String email, {bool silent = false}) async {
+  /// Sign in with email and password - verifies against backend database
+  /// Retries up to 3 times to handle Fly.io cold starts
+  Future<bool> signIn(String email, String password, {bool silent = false}) async {
     if (!silent) {
       state = state.copyWith(status: AuthStatus.checking);
     }
@@ -93,11 +96,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final normalizedEmail = email.toLowerCase().trim();
 
-      final response = await http.post(
-        Uri.parse('${AppConfig.orchonUrl}/auth/verify'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': normalizedEmail}),
-      ).timeout(const Duration(seconds: 10));
+      // Retry logic for Fly.io cold starts
+      http.Response? response;
+      const maxRetries = 3;
+      for (var attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          response = await http.post(
+            Uri.parse('${AppConfig.orchonUrl}/auth/verify'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': normalizedEmail, 'password': password}),
+          ).timeout(const Duration(seconds: 15));
+
+          // If we get a valid response (not a cold start error), break
+          if (response.statusCode != 503 &&
+              !response.body.contains('Database unavailable')) {
+            break;
+          }
+
+          // Wait before retry (backend is waking up)
+          if (attempt < maxRetries) {
+            debugPrint('[AuthService] Backend cold start, retry $attempt/$maxRetries...');
+            await Future.delayed(Duration(seconds: attempt * 2));
+          }
+        } catch (e) {
+          if (attempt == maxRetries) rethrow;
+          debugPrint('[AuthService] Request failed, retry $attempt/$maxRetries...');
+          await Future.delayed(Duration(seconds: attempt * 2));
+        }
+      }
+
+      if (response == null) {
+        throw Exception('Failed to connect after $maxRetries attempts');
+      }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -108,6 +138,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           // Store credentials
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_emailKey, user.email);
+          await prefs.setString(_passwordKey, password);
           if (user.name != null) {
             await prefs.setString(_userNameKey, user.name!);
           }
@@ -122,10 +153,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
       }
 
-      // Not authorized
+      // Not authorised
       state = AuthState(
         status: AuthStatus.unauthenticated,
-        errorMessage: 'Email not authorized',
+        errorMessage: 'Invalid credentials',
       );
       return false;
     } catch (e) {
@@ -135,7 +166,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (silent) {
         final prefs = await SharedPreferences.getInstance();
         final storedEmail = prefs.getString(_emailKey);
-        if (storedEmail != null) {
+        final storedPassword = prefs.getString(_passwordKey);
+        if (storedEmail != null && storedPassword != null) {
           final storedName = prefs.getString(_userNameKey);
           state = AuthState(
             status: AuthStatus.authenticated,
@@ -158,6 +190,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_emailKey);
+    await prefs.remove(_passwordKey);
     await prefs.remove(_userNameKey);
 
     state = const AuthState(status: AuthStatus.unauthenticated);

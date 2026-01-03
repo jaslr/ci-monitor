@@ -1,40 +1,56 @@
 import { Hono } from 'hono';
-import { query, getPool } from '../db/client.js';
+import bcrypt from 'bcrypt';
+import { query, ensureDb } from '../db/client.js';
 
 export const authRoutes = new Hono();
 
-// Verify email is in allowed_users list
-// This endpoint is PUBLIC (no API secret required) -
-// but only returns success for emails in the database
+const SALT_ROUNDS = 10;
+
+// Verify email + password
+// This endpoint is PUBLIC (no API secret required)
 authRoutes.post('/verify', async (c) => {
   try {
-    const pool = getPool();
+    const pool = await ensureDb();
     if (!pool) {
       return c.json({ error: 'Database unavailable' }, 503);
     }
 
     const body = await c.req.json();
-    const { email } = body;
+    const { email, password } = body;
 
     if (!email || typeof email !== 'string') {
       return c.json({ error: 'Email required' }, 400);
+    }
+
+    if (!password || typeof password !== 'string') {
+      return c.json({ error: 'Password required' }, 400);
     }
 
     // Normalize email to lowercase
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if email exists in allowed_users
-    const result = await query<{ id: number; email: string; name: string | null }>(
-      'SELECT id, email, name FROM allowed_users WHERE LOWER(email) = $1',
+    const result = await query<{ id: number; email: string; name: string | null; password_hash: string | null }>(
+      'SELECT id, email, name, password_hash FROM allowed_users WHERE LOWER(email) = $1',
       [normalizedEmail]
     );
 
     if (result.rows.length === 0) {
       // Don't reveal whether email exists or not
-      return c.json({ authorized: false }, 401);
+      return c.json({ authorized: false, error: 'Invalid credentials' }, 401);
     }
 
     const user = result.rows[0];
+
+    // Check password
+    if (!user.password_hash) {
+      return c.json({ authorized: false, error: 'Password not set' }, 401);
+    }
+
+    const passwordValid = await bcrypt.compare(password, user.password_hash);
+    if (!passwordValid) {
+      return c.json({ authorized: false, error: 'Invalid credentials' }, 401);
+    }
 
     // Update last login timestamp
     await query(
@@ -55,10 +71,44 @@ authRoutes.post('/verify', async (c) => {
   }
 });
 
+// Set password for a user (requires API secret - admin only)
+authRoutes.post('/set-password', async (c) => {
+  try {
+    const pool = await ensureDb();
+    if (!pool) {
+      return c.json({ error: 'Database unavailable' }, 503);
+    }
+
+    const body = await c.req.json();
+    const { email, password } = body;
+
+    if (!email || !password) {
+      return c.json({ error: 'Email and password required' }, 400);
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const result = await query(
+      'UPDATE allowed_users SET password_hash = $1 WHERE LOWER(email) = $2',
+      [passwordHash, normalizedEmail]
+    );
+
+    if (result.rowCount === 0) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    return c.json({ success: true, message: 'Password set' });
+  } catch (err) {
+    console.error('Set password error:', err);
+    return c.json({ error: 'Internal error' }, 500);
+  }
+});
+
 // List allowed users (requires API secret - admin only)
 authRoutes.get('/users', async (c) => {
   try {
-    const pool = getPool();
+    const pool = await ensureDb();
     if (!pool) {
       return c.json({ error: 'Database unavailable' }, 503);
     }
@@ -77,7 +127,7 @@ authRoutes.get('/users', async (c) => {
 // Add a new allowed user (requires API secret - admin only)
 authRoutes.post('/users', async (c) => {
   try {
-    const pool = getPool();
+    const pool = await ensureDb();
     if (!pool) {
       return c.json({ error: 'Database unavailable' }, 503);
     }
@@ -106,7 +156,7 @@ authRoutes.post('/users', async (c) => {
 // Remove an allowed user (requires API secret - admin only)
 authRoutes.delete('/users/:email', async (c) => {
   try {
-    const pool = getPool();
+    const pool = await ensureDb();
     if (!pool) {
       return c.json({ error: 'Database unavailable' }, 503);
     }
