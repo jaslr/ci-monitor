@@ -11,17 +11,26 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   String _version = '';
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _loadVersion() async {
@@ -37,6 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -66,40 +76,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ORCHON Logo
-                  SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: SvgPicture.asset(
-                      'assets/icon.svg',
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF6366F1),
-                        BlendMode.srcIn,
+      body: Stack(
+        children: [
+          // Main login form
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // ORCHON Logo
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: SvgPicture.asset(
+                          'assets/icon.svg',
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF6366F1),
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+                      const SizedBox(height: 32),
 
-                  // Title
-                  const Text(
-                    'ORCHON',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 4,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
+                      // Title
+                      const Text(
+                        'ORCHON',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
 
                   // Email input - no rounded corners
                   TextFormField(
@@ -221,52 +234,101 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Sign in button - no rounded corners
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: isChecking ? null : _handleSignIn,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF6366F1).withOpacity(0.5),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
+                      // Sign in button - no rounded corners
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: isChecking ? null : _handleSignIn,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                          ),
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                      child: isChecking
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
+                      const SizedBox(height: 32),
+                      // Version footer
+                      Text(
+                        _version,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                  // Version footer
-                  Text(
-                    _version,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+          // Loading overlay
+          if (isChecking)
+            Container(
+              color: const Color(0xFF0F0F23),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: SvgPicture.asset(
+                        'assets/icon.svg',
+                        colorFilter: const ColorFilter.mode(
+                          Color(0xFF6366F1),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    // Status message with pulsing indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _pulseAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _pulseAnimation.value,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Connecting to server...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

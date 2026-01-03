@@ -92,20 +92,23 @@ export async function query<T extends pg.QueryResultRow>(
   text: string,
   params?: unknown[]
 ): Promise<pg.QueryResult<T>> {
-  if (!pool) {
+  // Try to reconnect if pool is null
+  const activePool = await ensureDb();
+  if (!activePool) {
     throw new Error('Database not initialized');
   }
-  return pool.query<T>(text, params);
+  return activePool.query<T>(text, params);
 }
 
 export async function getDbStatus(): Promise<{ connected: boolean; latencyMs?: number }> {
-  if (!pool) {
+  const activePool = await ensureDb();
+  if (!activePool) {
     return { connected: false };
   }
 
   try {
     const start = Date.now();
-    await pool.query('SELECT 1');
+    await activePool.query('SELECT 1');
     return { connected: true, latencyMs: Date.now() - start };
   } catch {
     return { connected: false };
