@@ -9,6 +9,7 @@ import '../../core/auth/auth_service.dart';
 import '../terminal/ssh_terminal_screen.dart';
 import '../terminal/quick_commands.dart';
 import '../threads/threads_screen.dart';
+import '../notifications/notifications_screen.dart';
 import 'terminal_config_screen.dart';
 
 void _showDeploymentGroupsSheet(BuildContext context, WidgetRef ref) {
@@ -287,9 +288,15 @@ class SettingsDrawer extends ConsumerWidget {
                   _SettingsTile(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
-                    subtitle: 'Push notification preferences',
+                    subtitle: 'Push notification rules',
                     onTap: () {
-                      // TODO: Notification settings
+                      Navigator.pop(context); // Close drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
                     },
                   ),
                   _SettingsTile(

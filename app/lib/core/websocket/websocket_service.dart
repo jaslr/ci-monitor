@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../../features/notifications/notification_rule.dart';
 
 /// WebSocket connection states
 enum WsConnectionState { disconnected, connecting, connected, authenticated, error }
@@ -27,7 +28,34 @@ class ServerMessage {
   String? get error => data['error'] as String?;
   String? get prompt => data['prompt'] as String?;
   dynamic get result => data['result'];
+
+  // Notification-related fields
+  String? get project => data['project'] as String?;
+  String? get status => data['status'] as String?;
+  String? get message => data['message'] as String?;
+  String? get deploymentId => data['deploymentId'] as String?;
+
+  /// Whether this message should trigger a notification check
+  bool get isNotificationWorthy {
+    return type == 'deployment.update' ||
+           type == 'deployment.failed' ||
+           type == 'deployment.success' ||
+           type == 'service.status' ||
+           type == 'thread.completed' ||
+           type == 'thread.error';
+  }
+
+  /// Get notification source type
+  NotificationSource get notificationSource {
+    if (type.startsWith('deployment.')) {
+      return NotificationSource.deployment;
+    }
+    return NotificationSource.websocket;
+  }
 }
+
+/// Callback for notification-worthy messages
+typedef NotificationCallback = void Function(ServerMessage message);
 
 /// WebSocket service for real-time communication with droplet
 class WebSocketService {
@@ -42,6 +70,9 @@ class WebSocketService {
   int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 5;
   static const Duration _reconnectDelay = Duration(seconds: 3);
+
+  /// Optional callback for notification-worthy messages
+  NotificationCallback? onNotificationMessage;
 
   Stream<ServerMessage> get messages => _messageController.stream;
   Stream<WsConnectionState> get connectionState =>
@@ -161,6 +192,11 @@ class WebSocketService {
       if (message.type == 'auth.success') {
         print('[WS] Authenticated successfully');
         _updateState(WsConnectionState.authenticated);
+      }
+
+      // Check if this message should trigger a notification
+      if (message.isNotificationWorthy && onNotificationMessage != null) {
+        onNotificationMessage!(message);
       }
 
       _messageController.add(message);

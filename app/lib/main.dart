@@ -6,9 +6,16 @@ import 'package:path_provider/path_provider.dart';
 import 'core/auth/auth_service.dart';
 import 'features/auth/login_screen.dart';
 import 'features/deployments/deployments_screen.dart';
+import 'features/notifications/notification_rule.dart';
+import 'features/notifications/notification_service.dart';
+import 'features/notifications/notifications_provider.dart';
+import 'features/terminal/ssh_terminal_screen.dart';
 
 // Global error log
 final List<String> errorLog = [];
+
+// Global navigator key for handling notification taps
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> logError(String error) async {
   final timestamp = DateTime.now().toIso8601String();
@@ -24,7 +31,7 @@ Future<void> logError(String error) async {
   }
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Catch Flutter framework errors
@@ -33,7 +40,46 @@ void main() {
     // Don't crash - just log
   };
 
+  // Initialize notifications
+  await NotificationService().initialize(
+    onTap: _handleNotificationTap,
+  );
+
+  // Set up notification tap callback for provider
+  NotificationsNotifier.setNotificationTapCallback(_handleNotificationTap);
+
   runApp(const ProviderScope(child: OrchonApp()));
+}
+
+/// Handle notification tap - navigate based on action type
+void _handleNotificationTap(NotificationPayload payload) {
+  final context = navigatorKey.currentContext;
+  if (context == null) return;
+
+  switch (payload.action) {
+    case NotificationAction.openClaude:
+      // Launch Claude with project context
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => SshTerminalScreen(
+            launchMode: LaunchMode.claude,
+            initialCommand: payload.project != null
+              ? 'cd /root/projects/${payload.project} && claude'
+              : null,
+          ),
+        ),
+      );
+      break;
+
+    case NotificationAction.openDeployment:
+      // TODO: Navigate to deployment detail when implemented
+      // For now, just open app
+      break;
+
+    case NotificationAction.openApp:
+      // App is already open, nothing to do
+      break;
+  }
 }
 
 class OrchonApp extends ConsumerWidget {
@@ -44,6 +90,7 @@ class OrchonApp extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'ORCHON',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
