@@ -12,7 +12,13 @@
 		GitBranch,
 		Clock,
 		Filter,
-		X
+		X,
+		ArrowRight,
+		Upload,
+		Hammer,
+		CloudUpload,
+		Github,
+		Tag
 	} from '@lucide/svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -113,6 +119,43 @@
 			default: return 'Unknown';
 		}
 	}
+
+	// Get deployment pipeline description
+	function getPipelineDescription(deployment: DeploymentLogEntry): string {
+		const mechanism = deployment.deployMechanism || 'github-actions';
+		const target = getTargetName(deployment.provider);
+
+		switch (mechanism) {
+			case 'github-actions': return `GitHub → Actions → ${target}`;
+			case 'local-wrangler': return `Local → Wrangler → Cloudflare`;
+			case 'local-fly': return `Local → Fly CLI → Fly.io`;
+			case 'gcp-cloudbuild': return `GitHub → Cloud Build → Cloud Run`;
+			default: return `Push → Build → ${target}`;
+		}
+	}
+
+	function getTargetName(provider: string): string {
+		switch (provider?.toLowerCase()) {
+			case 'cloudflare': return 'Cloudflare';
+			case 'flyio': return 'Fly.io';
+			case 'gcp': return 'GCP';
+			default: return 'Host';
+		}
+	}
+
+	// Get GitHub Action link label
+	function getCILinkLabel(deployment: DeploymentLogEntry): string {
+		switch (deployment.provider?.toLowerCase()) {
+			case 'github': return 'GitHub Action';
+			case 'cloudflare': return 'CF Build';
+			case 'flyio': return 'Fly Deploy';
+			case 'gcp': return 'Cloud Build';
+			default: return 'CI/CD';
+		}
+	}
+
+	// Selected deployment for detail view
+	let selectedDeployment = $state<DeploymentLogEntry | null>(null);
 </script>
 
 <svelte:head>

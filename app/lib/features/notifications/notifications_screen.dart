@@ -17,24 +17,6 @@ class NotificationsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A2E),
         title: const Text('Notifications'),
-        actions: [
-          // Test notification button
-          IconButton(
-            icon: const Icon(Icons.notifications_active),
-            tooltip: 'Send test notification',
-            onPressed: () async {
-              await notifier.sendTestNotification();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Test notification sent'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-          ),
-        ],
       ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -48,16 +30,22 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   Widget _buildBody(BuildContext context, WidgetRef ref, NotificationsState state) {
+    final notifier = ref.read(notificationsProvider.notifier);
+
     // Permission banner
     final permissionBanner = !state.permissionGranted
         ? _PermissionBanner(ref: ref)
         : null;
+
+    // Test notification button at bottom
+    final testButton = _TestNotificationButton(notifier: notifier);
 
     if (state.rules.isEmpty) {
       return Column(
         children: [
           if (permissionBanner != null) permissionBanner,
           Expanded(child: _buildEmptyState(context)),
+          testButton,
         ],
       );
     }
@@ -67,7 +55,7 @@ class NotificationsScreen extends ConsumerWidget {
         if (permissionBanner != null) permissionBanner,
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80),
+            padding: const EdgeInsets.only(bottom: 16),
             itemCount: state.rules.length,
             itemBuilder: (context, index) {
               final rule = state.rules[index];
@@ -80,6 +68,7 @@ class NotificationsScreen extends ConsumerWidget {
             },
           ),
         ),
+        testButton,
       ],
     );
   }
@@ -321,5 +310,43 @@ class _RuleTile extends StatelessWidget {
       case NotificationAction.openApp:
         return 'App';
     }
+  }
+}
+
+class _TestNotificationButton extends StatelessWidget {
+  final NotificationsNotifier notifier;
+
+  const _TestNotificationButton({required this.notifier});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              await notifier.sendTestNotification();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Test notification sent'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.notifications_active),
+            label: const Text('Send Test Notification'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.grey[400],
+              side: BorderSide(color: Colors.grey[700]!),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -15,8 +15,14 @@ export interface DeploymentLogEntry {
 	runUrl?: string;
 	startedAt?: string;
 	completedAt?: string;
+	ciStartedAt?: string;
+	ciCompletedAt?: string;
 	deployStartedAt?: string;
 	deployCompletedAt?: string;
+	owner?: string;
+	repoName?: string;
+	deployMechanism?: 'github-actions' | 'local-wrangler' | 'local-fly' | 'gcp-cloudbuild';
+	version?: string;
 }
 
 interface DeploymentsResponse {
